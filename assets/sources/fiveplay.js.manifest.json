@@ -1,0 +1,40 @@
+{
+  "id": "fiveplay",
+  "name": "5Play",
+  "version": "1.0.0",
+  "homepage": "https://5play.org/",
+  "description": "丰富多样的 Android 游戏与应用下载平台",
+  "permissions": {
+    "network": [
+      "5play.org",
+      "*.5play.org",
+      "*.r2.cloudflarestorage.com"
+    ],
+    "browser": false,
+    "download": true,
+    "install": false
+  },
+  "capabilities": {
+    "catalog": false,
+    "detailProgress": false,
+    "packageLookup": false
+  },
+  "debugProjects": [
+    {
+      "id": "search-keyword",
+      "name": "搜索应用",
+      "description": "在 5Play 中搜索应用或游戏。",
+      "inputLabel": "关键词",
+      "placeholder": "例如 subway surfers",
+      "defaultInput": "subway surfers"
+    },
+    {
+      "id": "app-details",
+      "name": "获取应用详情",
+      "description": "获取应用详情与直链下载项。",
+      "inputLabel": "应用详情页 URL",
+      "placeholder": "例如 https://5play.org/15-subway-surfers.html",
+      "defaultInput": "https://5play.org/15-subway-surfers.html"
+    }
+  ]
+}

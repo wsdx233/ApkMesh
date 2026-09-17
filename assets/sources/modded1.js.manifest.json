@@ -1,0 +1,39 @@
+{
+  "id": "modded1",
+  "name": "Modded-1",
+  "version": "1.0.0",
+  "homepage": "https://modded-1.com/",
+  "description": "精选 Android 应用与 Mod 游戏下载平台",
+  "permissions": {
+    "network": [
+      "modded-1.com",
+      "*.modded-1.com"
+    ],
+    "browser": false,
+    "download": true,
+    "install": false
+  },
+  "capabilities": {
+    "catalog": false,
+    "detailProgress": false,
+    "packageLookup": false
+  },
+  "debugProjects": [
+    {
+      "id": "search-keyword",
+      "name": "搜索应用",
+      "description": "在 Modded-1 中搜索应用或 Mod。",
+      "inputLabel": "关键词",
+      "placeholder": "例如 subway surfers",
+      "defaultInput": "subway surfers"
+    },
+    {
+      "id": "app-details",
+      "name": "获取应用详情",
+      "description": "获取应用详情与 APK 直链下载。",
+      "inputLabel": "应用详情页 URL",
+      "placeholder": "例如 https://modded-1.com/games/action/subway-surfers-city",
+      "defaultInput": "https://modded-1.com/games/action/subway-surfers-city"
+    }
+  ]
+}

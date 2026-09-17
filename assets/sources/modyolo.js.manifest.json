@@ -1,0 +1,39 @@
+{
+  "id": "modyolo",
+  "name": "MODYOLO",
+  "version": "1.0.0",
+  "homepage": "https://modyolo.com/",
+  "description": "海量流行 Android 应用与 Mod 游戏下载平台",
+  "permissions": {
+    "network": [
+      "modyolo.com",
+      "*.modyolo.com"
+    ],
+    "browser": false,
+    "download": true,
+    "install": false
+  },
+  "capabilities": {
+    "catalog": false,
+    "detailProgress": false,
+    "packageLookup": false
+  },
+  "debugProjects": [
+    {
+      "id": "search-keyword",
+      "name": "搜索应用",
+      "description": "在 MODYOLO 中搜索应用或 Mod。",
+      "inputLabel": "关键词",
+      "placeholder": "例如 subway surfers",
+      "defaultInput": "subway surfers"
+    },
+    {
+      "id": "app-details",
+      "name": "获取应用详情",
+      "description": "获取应用详情和直链下载项。",
+      "inputLabel": "应用详情页 URL",
+      "placeholder": "例如 https://modyolo.com/subway-surfers.html",
+      "defaultInput": "https://modyolo.com/subway-surfers.html"
+    }
+  ]
+}

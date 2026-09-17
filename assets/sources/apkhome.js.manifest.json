@@ -1,0 +1,40 @@
+{
+  "id": "apkhome",
+  "name": "APKHome",
+  "version": "1.0.0",
+  "homepage": "https://apkhome.io/",
+  "description": "历史悠久的 Android 应用与 Mod 游戏下载站",
+  "permissions": {
+    "network": [
+      "apkhome.io",
+      "apkhome.net",
+      "*.apkhome.net"
+    ],
+    "browser": false,
+    "download": true,
+    "install": false
+  },
+  "capabilities": {
+    "catalog": false,
+    "detailProgress": false,
+    "packageLookup": false
+  },
+  "debugProjects": [
+    {
+      "id": "search-keyword",
+      "name": "搜索应用",
+      "description": "在 APKHome 中搜索应用或 Mod。",
+      "inputLabel": "关键词",
+      "placeholder": "例如 subway surfers",
+      "defaultInput": "subway surfers"
+    },
+    {
+      "id": "app-details",
+      "name": "获取应用详情",
+      "description": "获取应用详情与 APK 直链下载。",
+      "inputLabel": "应用详情页 URL",
+      "placeholder": "例如 https://apkhome.net/subway-surfers-mod-apk/",
+      "defaultInput": "https://apkhome.net/subway-surfers-mod-apk/"
+    }
+  ]
+}

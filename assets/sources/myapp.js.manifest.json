@@ -1,0 +1,41 @@
+{
+  "id": "myapp",
+  "name": "应用宝",
+  "version": "1.0.0",
+  "homepage": "https://sj.qq.com",
+  "description": "腾讯应用宝官方应用市场",
+  "permissions": {
+    "network": [
+      "sj.qq.com",
+      "*.qq.com",
+      "*.myapp.com",
+      "*.qpic.cn"
+    ],
+    "browser": false,
+    "download": true,
+    "install": false
+  },
+  "capabilities": {
+    "catalog": false,
+    "detailProgress": false,
+    "packageLookup": true
+  },
+  "debugProjects": [
+    {
+      "id": "search-keyword",
+      "name": "搜索应用",
+      "description": "在应用宝中搜索 Android 应用。",
+      "inputLabel": "关键词",
+      "placeholder": "例如 微信",
+      "defaultInput": "微信"
+    },
+    {
+      "id": "app-details",
+      "name": "获取应用详情",
+      "description": "读取应用宝中的应用详情及下载链接。",
+      "inputLabel": "包名或详情 URL",
+      "placeholder": "例如 com.tencent.mm",
+      "defaultInput": "com.tencent.mm"
+    }
+  ]
+}

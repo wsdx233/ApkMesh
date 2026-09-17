@@ -1,0 +1,36 @@
+{
+  "id": "fdroid",
+  "name": "F-Droid",
+  "version": "1.0.0",
+  "homepage": "https://f-droid.org/",
+  "description": "全球最大的开源 Android 应用仓库，提供自由及开源软件搜索、版本和 APK 下载。",
+  "permissions": {
+    "network": ["f-droid.org", "*.f-droid.org", "*.fau.de"],
+    "browser": false,
+    "download": true,
+    "install": false
+  },
+  "capabilities": {
+    "catalog": true,
+    "detailProgress": false,
+    "packageLookup": true
+  },
+  "debugProjects": [
+    {
+      "id": "search-keyword",
+      "name": "搜索关键词",
+      "description": "在 F-Droid 中搜索开源应用。",
+      "inputLabel": "关键词",
+      "placeholder": "例如 vlc",
+      "defaultInput": "vlc"
+    },
+    {
+      "id": "app-details",
+      "name": "获取应用详情",
+      "description": "读取应用版本、截图与 APK 下载链接。",
+      "inputLabel": "应用 URL",
+      "placeholder": "粘贴 F-Droid 应用详情页地址",
+      "defaultInput": "https://f-droid.org/en/packages/org.videolan.vlc/"
+    }
+  ]
+}
