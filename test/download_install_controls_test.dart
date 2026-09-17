@@ -1,6 +1,7 @@
 import 'package:apk_mesh/core/app_state.dart';
 import 'package:apk_mesh/core/models.dart';
 import 'package:apk_mesh/core/source_runtime.dart';
+import 'package:apk_mesh/l10n/app_localizations.dart';
 import 'package:apk_mesh/pages/downloads_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -102,6 +103,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: DownloadTaskTile(
             task: _completedTask,
@@ -147,6 +151,9 @@ Widget _controlsApp(
 }) {
   final selectedTask = task ?? _completedTask;
   return MaterialApp(
+    locale: const Locale('zh'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: DownloadTaskControls(
         task: selectedTask,

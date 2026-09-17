@@ -5,25 +5,98 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/app_language.dart';
 import '../core/app_state.dart';
 import '../core/models.dart';
 import '../core/translation_service.dart';
+import '../l10n/app_localizations.dart';
 
 const _settingsTilePadding = EdgeInsets.symmetric(horizontal: 16);
 const _settingsControlWidth = 152.0;
 final _githubRepositoryUri = Uri.parse('https://github.com/wsdx233/ApkMesh');
 
-String _themeModeLabel(AppThemeMode mode) => switch (mode) {
-  AppThemeMode.system => '跟随系统',
-  AppThemeMode.light => '浅色',
-  AppThemeMode.dark => '深色',
-};
+String _themeModeLabel(AppThemeMode mode, AppLocalizations strings) =>
+    switch (mode) {
+      AppThemeMode.system => strings.followSystem,
+      AppThemeMode.light => strings.lightTheme,
+      AppThemeMode.dark => strings.darkTheme,
+    };
 
-String _downloadMethodLabel(DownloadMethod method) => switch (method) {
-  DownloadMethod.internal => '应用内部',
-  DownloadMethod.browser => '浏览器',
-  DownloadMethod.externalDownloader => '外部下载器',
-};
+String _downloadMethodLabel(DownloadMethod method, AppLocalizations strings) =>
+    switch (method) {
+      DownloadMethod.internal => strings.internalDownload,
+      DownloadMethod.browser => strings.browser,
+      DownloadMethod.externalDownloader => strings.externalDownloader,
+    };
+
+class _AppLanguageSettingsTile extends StatelessWidget {
+  const _AppLanguageSettingsTile({required this.state});
+
+  final AppState state;
+
+  String _label(AppLanguage language, AppLocalizations strings) =>
+      switch (language) {
+        AppLanguage.system => strings.followSystem,
+        AppLanguage.chinese => strings.languageChinese,
+        AppLanguage.english => strings.languageEnglish,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context);
+    return ListTile(
+      key: const ValueKey('app-language-setting'),
+      contentPadding: _settingsTilePadding,
+      leading: const Icon(Icons.language),
+      title: Text(strings.appLanguage),
+      subtitle: Text(_label(state.appLanguage, strings)),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        useSafeArea: true,
+        showDragHandle: true,
+        builder: (context) {
+          final strings = AppLocalizations.of(context);
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  strings.appLanguage,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(strings.appLanguageHint),
+                const SizedBox(height: 12),
+                RadioGroup<AppLanguage>(
+                  groupValue: state.appLanguage,
+                  onChanged: (language) {
+                    if (language == null) return;
+                    unawaited(state.setAppLanguage(language));
+                    Navigator.pop(context);
+                  },
+                  child: Column(
+                    children: [
+                      for (final language in AppLanguage.values)
+                        RadioListTile<AppLanguage>(
+                          key: ValueKey('app-language-${language.preference}'),
+                          contentPadding: EdgeInsets.zero,
+                          value: language,
+                          title: Text(_label(language, strings)),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({required this.state, super.key});
@@ -44,16 +117,23 @@ class SettingsPage extends StatelessWidget {
                 Padding(
                   padding: _settingsTilePadding,
                   child: Text(
-                    '设置',
+                    AppLocalizations.of(context).settings,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                 ),
                 const SizedBox(height: 20),
+                _AppLanguageSettingsTile(state: state),
+                const Divider(),
                 ListTile(
                   contentPadding: _settingsTilePadding,
                   leading: const Icon(Icons.brightness_6_outlined),
-                  title: const Text('主题'),
-                  subtitle: Text(_themeModeLabel(state.themeMode)),
+                  title: Text(AppLocalizations.of(context).theme),
+                  subtitle: Text(
+                    _themeModeLabel(
+                      state.themeMode,
+                      AppLocalizations.of(context),
+                    ),
+                  ),
                   trailing: SizedBox(
                     width: _settingsControlWidth,
                     child: DropdownButton<AppThemeMode>(
@@ -66,7 +146,12 @@ class SettingsPage extends StatelessWidget {
                         for (final mode in AppThemeMode.values)
                           DropdownMenuItem(
                             value: mode,
-                            child: Text(_themeModeLabel(mode)),
+                            child: Text(
+                              _themeModeLabel(
+                                mode,
+                                AppLocalizations.of(context),
+                              ),
+                            ),
                           ),
                       ],
                     ),
@@ -77,11 +162,13 @@ class SettingsPage extends StatelessWidget {
                 const Divider(),
                 _InformationSettingsTile(
                   icon: Icons.folder_outlined,
-                  title: '下载目录',
-                  subtitle: '应用内部下载使用系统下载目录',
-                  paragraphs: const [
-                    '选择“应用内部”时，文件会保存到当前平台提供的下载目录；平台未提供该目录时使用应用文档目录。',
-                    '选择浏览器或外部下载器时，保存位置由接收下载链接的应用决定。',
+                  title: AppLocalizations.of(context).downloadDirectory,
+                  subtitle: AppLocalizations.of(
+                    context,
+                  ).downloadDirectorySummary,
+                  paragraphs: [
+                    AppLocalizations.of(context).downloadDirectoryInternal,
+                    AppLocalizations.of(context).downloadDirectoryExternal,
                   ],
                 ),
                 const Divider(),
@@ -92,11 +179,11 @@ class SettingsPage extends StatelessWidget {
                 ListTile(
                   contentPadding: _settingsTilePadding,
                   leading: const Icon(Icons.security_outlined),
-                  title: const Text('安装权限'),
+                  title: Text(AppLocalizations.of(context).installPermission),
                   subtitle: Text(
                     state.host.supportsInstall
-                        ? '安装 APK 前需要允许本应用安装未知来源的应用'
-                        : '当前平台不支持 APK 安装',
+                        ? AppLocalizations.of(context).installPermissionSummary
+                        : AppLocalizations.of(context).installUnsupported,
                   ),
                   trailing: const Icon(Icons.open_in_new),
                   onTap: state.host.supportsInstall
@@ -104,9 +191,11 @@ class SettingsPage extends StatelessWidget {
                       : () => _showInformationSheet(
                           context,
                           icon: Icons.security_outlined,
-                          title: '安装权限',
-                          paragraphs: const [
-                            'APK 安装仅在 Android 平台可用。用户点击安装不受源的安装权限声明限制；源脚本主动调用安装时仍需声明对应权限。',
+                          title: AppLocalizations.of(context).installPermission,
+                          paragraphs: [
+                            AppLocalizations.of(
+                              context,
+                            ).installPermissionDetails,
                           ],
                         ),
                 ),
@@ -115,33 +204,33 @@ class SettingsPage extends StatelessWidget {
                   _ShizukuInstallationSettingsPanel(state: state),
                 ],
                 const Divider(),
-                const _InformationSettingsTile(
+                _InformationSettingsTile(
                   icon: Icons.policy_outlined,
-                  title: '法律与安全',
-                  subtitle: '使用第三方源和 APK 文件前请确认授权与可信度',
+                  title: AppLocalizations.of(context).legalSafety,
+                  subtitle: AppLocalizations.of(context).legalSafetySummary,
                   paragraphs: [
-                    '请只导入你有权访问和使用的站点源，并遵守对应站点的服务条款与当地法律。',
-                    'APK Mesh 不验证第三方下载内容。安装前请核验应用来源、包名、版本和签名，并使用可信的安全工具检查文件。',
-                    '源声明的网络、浏览器、下载和安装权限会限制脚本可调用的宿主能力，但不会阻止用户手动安装已下载的 APK。',
+                    AppLocalizations.of(context).legalAuthorization,
+                    AppLocalizations.of(context).legalVerification,
+                    AppLocalizations.of(context).legalPermissions,
                   ],
                 ),
                 const Divider(),
                 ListTile(
                   contentPadding: _settingsTilePadding,
                   leading: const Icon(Icons.code),
-                  title: const Text('GitHub 项目'),
-                  subtitle: const Text('查看源代码、问题和版本发布'),
+                  title: Text(AppLocalizations.of(context).githubProject),
+                  subtitle: Text(AppLocalizations.of(context).githubSummary),
                   trailing: const Icon(Icons.open_in_new),
                   onTap: () => _openGitHubRepository(context),
                 ),
                 const Divider(),
-                const _InformationSettingsTile(
+                _InformationSettingsTile(
                   icon: Icons.info_outline,
-                  title: '关于 APK Mesh',
-                  subtitle: '开源 APK 源聚合客户端 · 1.0.0',
+                  title: AppLocalizations.of(context).aboutApp,
+                  subtitle: AppLocalizations.of(context).aboutSummary,
                   paragraphs: [
-                    'APK Mesh 是一个开源 APK 源聚合客户端。应用通过受权限策略约束的独立源脚本搜索应用、解析详情并获取下载地址。',
-                    '版本 1.0.0',
+                    AppLocalizations.of(context).aboutDescription,
+                    AppLocalizations.of(context).appVersion,
                   ],
                 ),
               ],
@@ -164,9 +253,9 @@ Future<void> _openGitHubRepository(BuildContext context) async {
     // The same user-facing message covers unavailable and failing handlers.
   }
   if (!context.mounted) return;
-  ScaffoldMessenger.of(
-    context,
-  ).showSnackBar(const SnackBar(content: Text('无法打开 GitHub 项目')));
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(AppLocalizations.of(context).githubOpenFailed)),
+  );
 }
 
 class _DownloadMethodSettingsTile extends StatelessWidget {
@@ -178,8 +267,10 @@ class _DownloadMethodSettingsTile extends StatelessWidget {
   Widget build(BuildContext context) => ListTile(
     contentPadding: _settingsTilePadding,
     leading: const Icon(Icons.download_for_offline_outlined),
-    title: const Text('下载方式'),
-    subtitle: Text(_downloadMethodLabel(state.downloadMethod)),
+    title: Text(AppLocalizations.of(context).downloadMethod),
+    subtitle: Text(
+      _downloadMethodLabel(state.downloadMethod, AppLocalizations.of(context)),
+    ),
     trailing: const Icon(Icons.chevron_right),
     onTap: () => showModalBottomSheet<void>(
       context: context,
@@ -208,12 +299,12 @@ class _DownloadMethodSheet extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '下载方式',
+                    AppLocalizations.of(context).downloadMethod,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
                 IconButton(
-                  tooltip: '关闭',
+                  tooltip: AppLocalizations.of(context).close,
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close),
                 ),
@@ -229,30 +320,38 @@ class _DownloadMethodSheet extends StatelessWidget {
               },
               child: Column(
                 children: [
-                  const RadioListTile<DownloadMethod>(
+                  RadioListTile<DownloadMethod>(
                     contentPadding: EdgeInsets.zero,
                     value: DownloadMethod.internal,
                     secondary: Icon(Icons.download_outlined),
-                    title: Text('应用内部'),
-                    subtitle: Text('在 APK Mesh 中下载，可查看进度、暂停、继续和安装'),
+                    title: Text(AppLocalizations.of(context).internalDownload),
+                    subtitle: Text(
+                      AppLocalizations.of(context).internalDownloadHint,
+                    ),
                   ),
-                  const RadioListTile<DownloadMethod>(
+                  RadioListTile<DownloadMethod>(
                     contentPadding: EdgeInsets.zero,
                     value: DownloadMethod.browser,
                     secondary: Icon(Icons.open_in_browser_outlined),
-                    title: Text('浏览器'),
-                    subtitle: Text('使用系统默认浏览器打开下载链接'),
+                    title: Text(AppLocalizations.of(context).browser),
+                    subtitle: Text(
+                      AppLocalizations.of(context).browserDownloadHint,
+                    ),
                   ),
                   RadioListTile<DownloadMethod>(
                     contentPadding: EdgeInsets.zero,
                     value: DownloadMethod.externalDownloader,
                     enabled: state.supportsExternalDownloader,
                     secondary: const Icon(Icons.move_to_inbox_outlined),
-                    title: const Text('外部下载器'),
+                    title: Text(
+                      AppLocalizations.of(context).externalDownloader,
+                    ),
                     subtitle: Text(
                       state.supportsExternalDownloader
-                          ? '选择 ADM、1DM 等支持下载 Intent 的应用'
-                          : '当前平台不支持外部下载器',
+                          ? AppLocalizations.of(context).externalDownloaderHint
+                          : AppLocalizations.of(
+                              context,
+                            ).externalDownloaderUnsupported,
                     ),
                   ),
                 ],
@@ -323,7 +422,7 @@ void _showInformationSheet(
                     ),
                   ),
                   IconButton(
-                    tooltip: '关闭',
+                    tooltip: AppLocalizations.of(context).close,
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close),
                   ),
@@ -356,7 +455,7 @@ class _SourceConcurrencySettingsTile extends StatelessWidget {
     return ListTile(
       contentPadding: _settingsTilePadding,
       leading: const Icon(Icons.speed_outlined),
-      title: const Text('源并发设置'),
+      title: Text(AppLocalizations.of(context).sourceConcurrency),
       subtitle: Text(
         'HTTP ${settings.httpRequests} · WebView ${settings.webViews}',
       ),
@@ -477,12 +576,12 @@ class _SourceConcurrencySheetState extends State<_SourceConcurrencySheet> {
                   children: [
                     Expanded(
                       child: Text(
-                        '源并发设置',
+                        AppLocalizations.of(context).sourceConcurrency,
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                     ),
                     IconButton(
-                      tooltip: '关闭',
+                      tooltip: AppLocalizations.of(context).close,
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
                     ),
@@ -491,8 +590,8 @@ class _SourceConcurrencySheetState extends State<_SourceConcurrencySheet> {
                 const SizedBox(height: 20),
                 _ConcurrencyControl(
                   icon: Icons.language_outlined,
-                  title: 'HTTP 请求',
-                  subtitle: '同时执行的源网络请求数',
+                  title: AppLocalizations.of(context).httpRequests,
+                  subtitle: AppLocalizations.of(context).httpConcurrencyHint,
                   value: _httpRequests,
                   baselineMax: 100,
                   controller: _httpController,
@@ -502,8 +601,8 @@ class _SourceConcurrencySheetState extends State<_SourceConcurrencySheet> {
                 const Divider(height: 40),
                 _ConcurrencyControl(
                   icon: Icons.web_asset_outlined,
-                  title: '隐藏 WebView',
-                  subtitle: '同时保持活动的浏览器标签页数',
+                  title: AppLocalizations.of(context).headlessWebView,
+                  subtitle: AppLocalizations.of(context).webViewConcurrencyHint,
                   value: _webViews,
                   baselineMax: 10,
                   controller: _webViewController,
@@ -517,13 +616,13 @@ class _SourceConcurrencySheetState extends State<_SourceConcurrencySheet> {
                     TextButton.icon(
                       onPressed: _restoreDefaults,
                       icon: const Icon(Icons.restart_alt),
-                      label: const Text('恢复默认值'),
+                      label: Text(AppLocalizations.of(context).restoreDefaults),
                     ),
                     const SizedBox(width: 12),
                     FilledButton.icon(
                       onPressed: _valid ? _apply : null,
                       icon: const Icon(Icons.check),
-                      label: const Text('应用'),
+                      label: Text(AppLocalizations.of(context).apply),
                     ),
                   ],
                 ),
@@ -600,8 +699,10 @@ class _ConcurrencyControl extends StatelessWidget {
                 textAlign: TextAlign.end,
                 onChanged: onTextChanged,
                 decoration: InputDecoration(
-                  labelText: '并发数',
-                  errorText: valid ? null : '至少为 1',
+                  labelText: AppLocalizations.of(context).concurrency,
+                  errorText: valid
+                      ? null
+                      : AppLocalizations.of(context).minimumOne,
                 ),
               ),
             ),
@@ -631,15 +732,22 @@ class _ConcurrencyControl extends StatelessWidget {
   }
 }
 
-String _shizukuStatusLabel(ShizukuStatus status, bool enabled) =>
-    switch (status) {
-      ShizukuStatus.authorized =>
-        enabled ? '已授权；点击安装后将通过 Shizuku 安装 APK' : '已授权，打开后通过 Shizuku 安装 APK',
-      ShizukuStatus.unavailable =>
-        enabled ? 'Shizuku 未运行，安装前请先启动服务' : '请先启动 Shizuku，再打开此选项',
-      ShizukuStatus.denied => 'Shizuku 未授予 APK Mesh 权限',
-      ShizukuStatus.unsupported => '当前平台不支持 Shizuku 安装',
-    };
+String _shizukuStatusLabel(
+  ShizukuStatus status,
+  bool enabled,
+  AppLocalizations strings,
+) => switch (status) {
+  ShizukuStatus.authorized =>
+    enabled
+        ? strings.shizukuAuthorizedEnabled
+        : strings.shizukuAuthorizedDisabled,
+  ShizukuStatus.unavailable =>
+    enabled
+        ? strings.shizukuNotRunningEnabled
+        : strings.shizukuNotRunningDisabled,
+  ShizukuStatus.denied => strings.shizukuDenied,
+  ShizukuStatus.unsupported => strings.shizukuUnsupported,
+};
 
 class _ShizukuInstallationSettingsPanel extends StatefulWidget {
   const _ShizukuInstallationSettingsPanel({required this.state});
@@ -666,16 +774,26 @@ class _ShizukuInstallationSettingsPanelState
     try {
       final changed = await widget.state.setUseShizukuInstaller(enabled);
       if (!changed && mounted) {
-        final message = _shizukuStatusLabel(widget.state.shizukuStatus, false);
+        final message = _shizukuStatusLabel(
+          widget.state.shizukuStatus,
+          false,
+          AppLocalizations.of(context),
+        );
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Shizuku 授权失败：$error')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              ).shizukuAuthorizationFailed((error).toString()),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _changing = false);
@@ -686,11 +804,12 @@ class _ShizukuInstallationSettingsPanelState
   Widget build(BuildContext context) => SwitchListTile(
     contentPadding: _settingsTilePadding,
     secondary: const Icon(Icons.admin_panel_settings_outlined),
-    title: const Text('使用 Shizuku 安装'),
+    title: Text(AppLocalizations.of(context).useShizuku),
     subtitle: Text(
       _shizukuStatusLabel(
         widget.state.shizukuStatus,
         widget.state.useShizukuInstaller,
+        AppLocalizations.of(context),
       ),
     ),
     value: widget.state.useShizukuInstaller,
@@ -709,9 +828,9 @@ class TranslationSettingsPanel extends StatelessWidget {
     return ListTile(
       contentPadding: _settingsTilePadding,
       leading: const Icon(Icons.translate_outlined),
-      title: const Text('翻译'),
+      title: Text(AppLocalizations.of(context).translation),
       subtitle: Text(
-        '${settings.provider.label} · ${translationLanguageLabel(settings.targetLanguage)}',
+        '${settings.provider.label(AppLocalizations.of(context))} · ${translationLanguageLabel(settings.targetLanguage, AppLocalizations.of(context))}',
       ),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => showModalBottomSheet<void>(
@@ -786,12 +905,12 @@ class _TranslationSettingsSheetState extends State<_TranslationSettingsSheet> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '翻译设置',
+                            AppLocalizations.of(context).translationSettings,
                             style: Theme.of(context).textTheme.headlineSmall,
                           ),
                         ),
                         IconButton(
-                          tooltip: '关闭',
+                          tooltip: AppLocalizations.of(context).close,
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close),
                         ),
@@ -800,15 +919,19 @@ class _TranslationSettingsSheetState extends State<_TranslationSettingsSheet> {
                     const SizedBox(height: 12),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('自动翻译应用名称和简介'),
-                      subtitle: const Text('搜索结果和详情加载后自动请求翻译'),
+                      title: Text(AppLocalizations.of(context).autoTranslate),
+                      subtitle: Text(
+                        AppLocalizations.of(context).autoTranslateHint,
+                      ),
                       value: settings.autoTranslate,
                       onChanged: widget.state.setAutoTranslate,
                     ),
                     const Divider(),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('翻译服务'),
+                      title: Text(
+                        AppLocalizations.of(context).translationService,
+                      ),
                       trailing: SizedBox(
                         width: _settingsControlWidth,
                         child: DropdownButton<TranslationProvider>(
@@ -823,7 +946,9 @@ class _TranslationSettingsSheetState extends State<_TranslationSettingsSheet> {
                             for (final provider in TranslationProvider.values)
                               DropdownMenuItem(
                                 value: provider,
-                                child: Text(provider.label),
+                                child: Text(
+                                  provider.label(AppLocalizations.of(context)),
+                                ),
                               ),
                           ],
                         ),
@@ -831,7 +956,7 @@ class _TranslationSettingsSheetState extends State<_TranslationSettingsSheet> {
                     ),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('目标语言'),
+                      title: Text(AppLocalizations.of(context).targetLanguage),
                       trailing: SizedBox(
                         width: _settingsControlWidth,
                         child: DropdownButton<String>(
@@ -857,7 +982,12 @@ class _TranslationSettingsSheetState extends State<_TranslationSettingsSheet> {
                             ])
                               DropdownMenuItem(
                                 value: language,
-                                child: Text(translationLanguageLabel(language)),
+                                child: Text(
+                                  translationLanguageLabel(
+                                    language,
+                                    AppLocalizations.of(context),
+                                  ),
+                                ),
                               ),
                           ],
                         ),
@@ -871,15 +1001,17 @@ class _TranslationSettingsSheetState extends State<_TranslationSettingsSheet> {
                         onEditingComplete: () => widget.state
                             .setGooglePublicKey(_googleKeyController.text),
                         onSubmitted: widget.state.setGooglePublicKey,
-                        decoration: const InputDecoration(
-                          labelText: 'Google 公共 API Key（可选）',
-                          helperText: '留空时使用 Google Translate 浏览器旧接口。',
+                        decoration: InputDecoration(
+                          labelText: AppLocalizations.of(context).googleApiKey,
+                          helperText: AppLocalizations.of(
+                            context,
+                          ).googleApiKeyHint,
                         ),
                       ),
                     ],
                     const SizedBox(height: 20),
                     Text(
-                      '翻译文本会发送到所选服务商或其网关。接口不稳定或请求失败时保留原文。',
+                      AppLocalizations.of(context).translationPrivacy,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],

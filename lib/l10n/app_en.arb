@@ -1,0 +1,1223 @@
+{
+  "@@locale": "en",
+  "home": "Home",
+  "downloads": "Downloads",
+  "downloadAction": "Download",
+  "favorites": "Favorites",
+  "favoriteAction": "Add to favorites",
+  "sources": "Sources",
+  "settings": "Settings",
+  "backHome": "Back to home",
+  "searchHint": "Search by app name or package name",
+  "translateEnglish": "Translate to English",
+  "clearSearch": "Clear search",
+  "closeSearch": "Close search",
+  "search": "Search",
+  "jumpToPage": "Jump to page",
+  "debug": "Debug",
+  "translationFailed": "Translation failed: {error}",
+  "@translationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "debugInformation": "Debug information",
+  "debugCounts": "Requests: {requests} · Logs: {logs}",
+  "@debugCounts": {
+    "placeholders": {
+      "requests": {
+        "type": "String"
+      },
+      "logs": {
+        "type": "String"
+      }
+    }
+  },
+  "clearDebug": "Clear debug records",
+  "close": "Close",
+  "overview": "Overview",
+  "requests": "Requests",
+  "projects": "Projects",
+  "logs": "Logs",
+  "runtime": "Runtime",
+  "quickJsLoaded": "QuickJS sources loaded",
+  "usingDemo": "Using demo source",
+  "enabledSources": "Enabled sources: {names}",
+  "@enabledSources": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "available": "Available",
+  "unavailable": "Unavailable",
+  "runtimeCapabilities": "Active tabs: {count} · Installation: {availability}",
+  "@runtimeCapabilities": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "availability": {
+        "type": "String"
+      }
+    }
+  },
+  "webViewStatus": "WebView status",
+  "noWebViewTabs": "No WebView tabs",
+  "webViewPreviewHint": "Run a debug project, then tap a tab to view its page.",
+  "recentRequests": "Recent requests",
+  "itemCount": "Count: {count}",
+  "@itemCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "noRequests": "No requests",
+  "runtimeLogs": "Runtime logs",
+  "noLogs": "No logs",
+  "requestRecords": "Request records",
+  "requestRecordsCount": "Count: {count} · Tap to view content",
+  "@requestRecordsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "noRequestRecords": "No request records",
+  "requestRecordsHint": "Requests appear here after an app search or a search debug project.",
+  "webViewDetailsHint": "Run the app details project, then open its tab to view the page.",
+  "debugProjects": "Debug projects",
+  "noDebugProjects": "The source declares no debug projects",
+  "debugProjectsHint": "Sources can declare debug workflows in manifest.debugProjects.",
+  "logCount": "Entries: {count}",
+  "@logCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "logsHint": "Events appear here after searches, details requests, or debug projects.",
+  "enterValue": "Please enter {label}",
+  "@enterValue": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "debugProjectFailed": "Debug project failed: {error}",
+  "@debugProjectFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "runDebugProject": "Run debug project",
+  "inProgress": "In progress",
+  "completed": "Completed",
+  "failed": "Failed",
+  "requestSummary": "{url}\n{milliseconds} ms · Characters: {characters}",
+  "@requestSummary": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      },
+      "milliseconds": {
+        "type": "String"
+      },
+      "characters": {
+        "type": "String"
+      }
+    }
+  },
+  "responseBody": "Response body",
+  "requestDetails": "Request details",
+  "noResponseBody": "No response body",
+  "requestHeaders": "Request headers",
+  "responseHeaders": "Response headers",
+  "status": "Status",
+  "loading": "Loading",
+  "webViewPreview": "WebView preview",
+  "active": "Active",
+  "history": "History",
+  "loadingProgress": "Loading",
+  "loaded": "Loaded",
+  "loadFailed": "Loading failed",
+  "webViewUnsupported": "Visual WebView is unavailable on this platform. Only tabs and activity records are retained.",
+  "closed": "Closed",
+  "none": "None",
+  "noAppWebpage": "This app has no webpage to open",
+  "sourcePolicyReadFailed": "Unable to read source permissions: {error}",
+  "@sourcePolicyReadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "webpageNotAllowed": "This source does not allow opening this webpage",
+  "noBrowser": "No browser is available on this system",
+  "browserOpenFailed": "Unable to open browser: {error}",
+  "@browserOpenFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noSearchableName": "This app has no name to search for",
+  "loadingDetails": "Loading details",
+  "sourceDetailsFailed": "Unable to load source details: {error}",
+  "@sourceDetailsFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadLinksFailed": "Unable to resolve download links: {error}",
+  "@downloadLinksFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "unfavorite": "Remove from favorites",
+  "refreshDetails": "Refresh details",
+  "openBrowser": "Open in browser",
+  "showOriginal": "Show original",
+  "translateNameDescription": "Translate name and description",
+  "switchSource": "Switch source",
+  "screenshots": "Screenshots",
+  "downloadFiles": "Download files",
+  "findingDownloads": "Looking for downloads…",
+  "comments": "Comments",
+  "sourceSearchFailed": "Source search failed",
+  "partialSourceSearchFailed": "Some sources failed to search: {names}",
+  "@partialSourceSearchFailed": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "searching": "Searching",
+  "sameNameSearchFailed": "Unable to search for matching apps",
+  "noSameNameApps": "No apps with exactly the same name",
+  "firstPageOnly": "Only first-page results from enabled sources are shown.",
+  "noDownloadLinks": "No usable download links found",
+  "expandDescription": "... Tap to expand",
+  "downloadStarted": "Download started. Check progress in Downloads.",
+  "sentToBrowser": "Sent to browser",
+  "sentToDownloader": "Sent to external downloader",
+  "cannotStartDownload": "Unable to start download: {error}",
+  "@cannotStartDownload": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "noDownloads": "No downloads",
+  "noDownloadsHint": "Select a file in app details to start a download here.",
+  "selectedDownloads": "Selected downloads: {count}",
+  "@selectedDownloads": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadManager": "Download manager",
+  "exitSelection": "Exit selection",
+  "cleanDownloads": "Clean up downloads",
+  "clearAll": "Clear all",
+  "clearCompleted": "Clear completed",
+  "selectAll": "Select all",
+  "invertSelection": "Invert selection",
+  "selectRange": "Select range",
+  "pauseSelectedDownloads": "Pause selected downloads",
+  "resumeSelectedDownloads": "Resume selected downloads",
+  "cancelSelectedDownloads": "Cancel selected downloads",
+  "retrySelectedDownloads": "Retry selected downloads",
+  "deleteSelectedDownloads": "Delete selected downloads",
+  "bulkActions": "Bulk actions",
+  "selectRangeHint": "Select the start and end of the range first",
+  "cancelSelectedTitle": "Cancel selected downloads?",
+  "cancelSelectedMessage": "Active downloads to cancel and remove: {count}.",
+  "@cancelSelectedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelDownload": "Cancel download",
+  "deleteSelectedTitle": "Delete selected downloads?",
+  "deleteSelectedMessage": "Download files and records to delete: {count}.",
+  "@deleteSelectedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "clearCompletedTitle": "Clear completed downloads?",
+  "clearAllDownloadsTitle": "Clear all downloads?",
+  "clearCompletedMessage": "Completed files and records to delete: {count}.",
+  "@clearCompletedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "clearAllDownloadsMessage": "Download files and records to delete: {count}. Active downloads will also be canceled.",
+  "@clearAllDownloadsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "clear": "Clear",
+  "deleteDownloadTitle": "Delete download?",
+  "deleteDownloadMessage": "Delete “{name}” and its download record.",
+  "@deleteDownloadMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "openFailed": "Unable to open",
+  "deleteDownload": "Delete download",
+  "openDetails": "Open details",
+  "resumeDownload": "Resume download",
+  "pauseDownload": "Pause download",
+  "open": "Open",
+  "install": "Install",
+  "retryDownload": "Retry download",
+  "downloadedBytes": "Downloaded {size}",
+  "@downloadedBytes": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "connecting": "Connecting",
+  "downloadSpeed": "Speed {size}/s",
+  "@downloadSpeed": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "remainingTime": "About {duration} remaining",
+  "@remainingTime": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "transferNotStarted": "Transfer not started",
+  "pausedProgress": "Paused · {progress}",
+  "@pausedProgress": {
+    "placeholders": {
+      "progress": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFailedDetail": "Download failed\n{error}",
+  "@downloadFailedDetail": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "unknownError": "Unknown error",
+  "canceled": "Canceled",
+  "hoursMinutes": "{hours} h {minutes} min",
+  "@hoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "hours": "{hours} h",
+  "@hours": {
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesSeconds": "{minutes} min {seconds} s",
+  "@minutesSeconds": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "minutes": "{minutes} min",
+  "@minutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "seconds": "{seconds} s",
+  "@seconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "installedWithShizuku": "Installed using Shizuku",
+  "sentToInstaller": "Sent to system installer",
+  "installationIncomplete": "Installation not completed. Check installation permission and retry.",
+  "installationFailed": "Installation failed",
+  "details": "Details",
+  "errorDetails": "{summary} details",
+  "@errorDetails": {
+    "placeholders": {
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "alreadyFavorites": "Selected apps are already in favorites",
+  "appsFavorited": "Apps added to favorites: {count}",
+  "@appsFavorited": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "resolvingDownloadsBackground": "Resolving download links in the background…",
+  "batchDownloadNoLinks": "Batch download failed: no usable download links",
+  "filesStarted": "Files started: {count}. Check progress in Downloads.",
+  "@filesStarted": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "filesStartedWithErrors": "Files started: {count}. Apps with link or download errors: {failed}.",
+  "@filesStartedWithErrors": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "failed": {
+        "type": "String"
+      }
+    }
+  },
+  "batchDownloadFailed": "Batch download failed: {error}",
+  "@batchDownloadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchSourcesFailed": "Unable to load search sources",
+  "allSources": "All sources",
+  "filterSearchSources": "Filter search sources",
+  "noEnabledSources": "No enabled sources",
+  "noEnabledSourcesHint": "Enable a source in Sources first.",
+  "loadingHome": "Loading home",
+  "homeLoadFailed": "Unable to load home content",
+  "retry": "Retry",
+  "noCatalog": "No catalog content",
+  "noCatalogHint": "The home source returned no usable tabs.",
+  "loadingNamed": "Loading {name}",
+  "@loadingNamed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "namedLoadFailed": "Unable to load {name}",
+  "@namedLoadFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noApps": "No apps",
+  "noAppsHint": "This tab returned no usable apps.",
+  "nextPageFailed": "Unable to load the next page",
+  "noResults": "No results",
+  "searchedAllSources": "Searched all enabled sources for “{query}”.",
+  "@searchedAllSources": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "noSourceResults": "This source returned no results for “{query}”.",
+  "@noSourceResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceRequestIncomplete": "The source request did not finish. Open error details for the cause.",
+  "invalidPage": "Enter a page number greater than 0",
+  "pageNumber": "Page number",
+  "jump": "Go",
+  "searchSourceTabs": "Search source tabs",
+  "automaticTabs": "Restore automatic tabs",
+  "sourceSearchHint": "Search source name or domain",
+  "previewSourceResults": "Preview results from this source",
+  "apply": "Apply",
+  "searchErrorDetails": "Search error details",
+  "copyError": "Copy error details",
+  "errorCopied": "Error details copied",
+  "noHistory": "No history",
+  "noFavorites": "No favorites",
+  "noHistoryHint": "Apps appear here automatically when you open their details.",
+  "noFavoritesHint": "Tap the bookmark in an app list or details to add a favorite.",
+  "browsingHistory": "Browsing history",
+  "myFavorites": "My favorites",
+  "clearHistory": "Clear history",
+  "clearFavorites": "Clear favorites",
+  "clearHistoryTitle": "Clear browsing history?",
+  "clearFavoritesTitle": "Clear favorites?",
+  "clearHistoryMessage": "This removes all browsing history.",
+  "clearFavoritesMessage": "This removes all favorite apps.",
+  "clearLibrary": "Clear",
+  "followSystem": "Follow system",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+  "internalDownload": "In-app",
+  "browser": "Browser",
+  "externalDownloader": "External downloader",
+  "theme": "Theme",
+  "downloadDirectory": "Download directory",
+  "downloadDirectorySummary": "In-app downloads use the system download directory",
+  "downloadDirectoryInternal": "In-app downloads are saved to the platform download directory, or the app documents directory if no download directory is available.",
+  "downloadDirectoryExternal": "When using a browser or external downloader, that app controls the save location.",
+  "installPermission": "Installation permission",
+  "installPermissionSummary": "Allow this app to install unknown apps before installing APKs",
+  "installUnsupported": "APK installation is unavailable on this platform",
+  "installPermissionDetails": "APK installation is only available on Android. User-initiated installation does not require the source to declare installation permission; source-initiated installation still does.",
+  "legalSafety": "Legal and safety",
+  "legalSafetySummary": "Confirm authorization and trust before using third-party sources and APKs",
+  "legalAuthorization": "Only import sources you are authorized to access and use. Follow each site''s terms of service and local laws.",
+  "legalVerification": "APK Mesh does not verify third-party downloads. Check the source, package name, version, and signature before installation, and scan files using trusted security tools.",
+  "legalPermissions": "Declared network, browser, download, and installation permissions limit source scripts, but do not prevent users from manually installing downloaded APKs.",
+  "githubProject": "GitHub project",
+  "githubSummary": "View source code, issues, and releases",
+  "aboutApp": "About APK Mesh",
+  "aboutSummary": "Open-source APK source aggregator · 1.0.0",
+  "aboutDescription": "APK Mesh is an open-source APK source aggregator. Independent source scripts, constrained by permission policies, search for apps, parse details, and retrieve download URLs.",
+  "appVersion": "Version 1.0.0",
+  "githubOpenFailed": "Unable to open the GitHub project",
+  "downloadMethod": "Download method",
+  "internalDownloadHint": "Download in APK Mesh with progress, pause, resume, and installation controls",
+  "browserDownloadHint": "Open download links in the default system browser",
+  "externalDownloaderHint": "Choose an app such as ADM or 1DM that supports download intents",
+  "externalDownloaderUnsupported": "External downloaders are unavailable on this platform",
+  "sourceConcurrency": "Source concurrency",
+  "httpRequests": "HTTP requests",
+  "httpConcurrencyHint": "Maximum simultaneous source network requests",
+  "headlessWebView": "Headless WebView",
+  "webViewConcurrencyHint": "Maximum simultaneously active browser tabs",
+  "restoreDefaults": "Restore defaults",
+  "concurrency": "Concurrency",
+  "minimumOne": "At least 1",
+  "shizukuAuthorizedEnabled": "Authorized. Tapping Install will install APKs using Shizuku.",
+  "shizukuAuthorizedDisabled": "Authorized. Enable to install APKs using Shizuku.",
+  "shizukuNotRunningEnabled": "Shizuku is not running. Start it before installing.",
+  "shizukuNotRunningDisabled": "Start Shizuku before enabling this option.",
+  "shizukuDenied": "Shizuku has not granted APK Mesh permission",
+  "shizukuUnsupported": "Shizuku installation is unavailable on this platform",
+  "shizukuAuthorizationFailed": "Shizuku authorization failed: {error}",
+  "@shizukuAuthorizationFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "useShizuku": "Install using Shizuku",
+  "translation": "Translation",
+  "translationSettings": "Translation settings",
+  "autoTranslate": "Automatically translate app names and descriptions",
+  "autoTranslateHint": "Request translations after search results and details load",
+  "translationService": "Translation service",
+  "targetLanguage": "Target language",
+  "googleApiKey": "Google public API key (optional)",
+  "googleApiKeyHint": "Leave empty to use the legacy Google Translate browser API.",
+  "translationPrivacy": "Text is sent to the selected provider or its gateway. Original text is retained if the service is unavailable or the request fails.",
+  "waitingForTest": "Waiting for test",
+  "testInputHint": "Enter {label} to start testing",
+  "@testInputHint": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "testing": "Testing",
+  "testLiveHint": "Testing in progress; status updates in real time",
+  "testSucceeded": "Test succeeded",
+  "testCompleted": "Test completed",
+  "testFailed": "Test failed",
+  "testIncomplete": "Test not completed",
+  "liveStatus": "Live status",
+  "requestCount": "Requests: {count}",
+  "@requestCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "requestStatusCounts": "In progress: {pending} · Completed: {completed} · Failed: {failed}",
+  "@requestStatusCounts": {
+    "placeholders": {
+      "pending": {
+        "type": "String"
+      },
+      "completed": {
+        "type": "String"
+      },
+      "failed": {
+        "type": "String"
+      }
+    }
+  },
+  "webViewCount": "WebViews: {count}",
+  "@webViewCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "recentEvents": "Recent events",
+  "testResults": "Test results",
+  "retest": "Retest",
+  "runTest": "Run test",
+  "disableFailedTitle": "Disable sources that failed testing?",
+  "disableFailedMessage": "Sources to disable after failed tests: {count}.",
+  "@disableFailedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "disableSources": "Disable sources",
+  "batchTestSources": "Batch test sources",
+  "batchTestQuery": "Search “{query}” · Sources: {count}",
+  "@batchTestQuery": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "batchTestProgress": "Testing · Completed: {completed}/{total} · Available: {available} · Failed: {failed}",
+  "@batchTestProgress": {
+    "placeholders": {
+      "completed": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "available": {
+        "type": "String"
+      },
+      "failed": {
+        "type": "String"
+      }
+    }
+  },
+  "batchTestCounts": "Available: {available} · Failed: {failed}",
+  "@batchTestCounts": {
+    "placeholders": {
+      "available": {
+        "type": "String"
+      },
+      "failed": {
+        "type": "String"
+      }
+    }
+  },
+  "disableFailedSources": "Disable failed ({count})",
+  "@disableFailedSources": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "batchTestIncomplete": "Batch test did not finish",
+  "notTested": "Not tested",
+  "sourceTestAvailable": "Available · Search results: {count}",
+  "@sourceTestAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceTestUnavailable": "Unavailable · {error}",
+  "@sourceTestUnavailable": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceCurrentlyDisabled": " · Currently disabled",
+  "batchTest": "Batch test",
+  "importSource": "Import source",
+  "selectedSources": "Selected sources: {count}",
+  "@selectedSources": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "enableSelectedSources": "Enable selected sources",
+  "disableSelectedSources": "Disable selected sources",
+  "enable": "Enable",
+  "disable": "Disable",
+  "sourcesImported": "Sources imported: {count}",
+  "@sourcesImported": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "sourcesImportedWithErrors": "Sources imported: {count} · Failed: {failed}",
+  "@sourcesImportedWithErrors": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "failed": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceUrl": "Source URL",
+  "importSourceFile": "Choose a JS or ZIP file",
+  "enterSourceUrl": "Enter a source URL",
+  "importSourceUrl": "Import from URL",
+  "viewTestProjects": "View test projects",
+  "noTestProjects": "No test projects",
+  "test": "Test",
+  "deleteSource": "Delete source",
+  "backgroundDownloadHint": "Resolve links in the background and add downloads",
+  "multiSelect": "Select multiple",
+  "multiSelectHint": "Select apps to download or favorite in bulk",
+  "resolvingDownload": "Resolving download links…",
+  "filesStartedPartial": "Files started: {count}, but some links could not be processed",
+  "@filesStartedPartial": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFailed": "Download failed: {error}",
+  "@downloadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectedApps": "Selected apps: {count}",
+  "@selectedApps": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "favoriteSelectedApps": "Favorite selected apps",
+  "downloadSelectedApps": "Download selected apps",
+  "lookupPackage": "Find apps by package name",
+  "lookupPackageTitle": "Find by package name",
+  "packageLookupFailed": "Package lookup failed",
+  "noMatchingApps": "No matching apps",
+  "noPackageSources": "No sources available for package lookup",
+  "packageSearchedHint": "Searched enabled package-lookup sources for this package.",
+  "enablePackageSourceHint": "Enable a source that declares package-lookup support first.",
+  "saveImage": "Save image",
+  "imageRequestFailed": "Image request failed: HTTP {status}",
+  "@imageRequestFailed": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "imageSaved": "Image saved to gallery",
+  "imageSaveFailed": "Unable to save image: {error}",
+  "@imageSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "demoSourceDescription": "Built-in demo source for testing APKVision search, details, and downloads.",
+  "translationClosed": "The translation service has been closed",
+  "translationEmpty": "The translation API returned no results",
+  "providerTranslationFailed": "{provider} translation failed: {error}",
+  "@providerTranslationFailed": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "shizukuStatusFailed": "Unable to read Shizuku status: {error}",
+  "@shizukuStatusFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "installStatusFailed": "Unable to read installation status: {name} · {error}",
+  "@installStatusFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "appNotInstalled": "This APK version is not installed or cannot be opened",
+  "installedAppOpenFailed": "Unable to open the installed app",
+  "settingsRestoreFailed": "Unable to restore settings: {error}",
+  "@settingsRestoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "builtInQuickJsSource": "Built-in QuickJS source",
+  "downloadsRestored": "Downloads restored: {count}",
+  "@downloadsRestored": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadsRestoreFailed": "Unable to restore downloads: {error}",
+  "@downloadsRestoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadsSaveFailed": "[APK Mesh] Unable to save downloads: {error}",
+  "@downloadsSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadSourceMissing": "Download source unavailable. Import it again and retry.",
+  "scanningSources": "Scanning built-in QuickJS sources",
+  "bundledSourcesFound": "Built-in source scripts found: {count}",
+  "@bundledSourcesFound": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceLoaded": "Source loaded: {path}",
+  "@sourceLoaded": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceLoadFailed": "QuickJS source failed to load ({path}): {error}",
+  "@sourceLoadFailed": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceReadFailed": "Unable to read the JS source script",
+  "sourceImportUnsupported": "QuickJS source import is unavailable on this platform",
+  "sourceMissingId": "Source manifest has no valid ID",
+  "sourceIdExists": "Source ID already exists: {id}",
+  "@sourceIdExists": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceHttpsRequired": "Source URL must use HTTPS",
+  "sourceRuntimeMissing": "Source runtime not loaded",
+  "batchTestStarted": "Starting batch source tests: search “{query}”",
+  "@batchTestStarted": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "batchTestFinished": "Batch tests finished: Available: {available} · Failed: {failed}",
+  "@batchTestFinished": {
+    "placeholders": {
+      "available": {
+        "type": "String"
+      },
+      "failed": {
+        "type": "String"
+      }
+    }
+  },
+  "searchStarted": "Starting aggregated search: {query}",
+  "@searchStarted": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceExecutionFailed": "{source} failed: {error}",
+  "@sourceExecutionFailed": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "searchFinished": "Aggregated search finished · Results: {count}",
+  "@searchFinished": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "packageLookupStarted": "Starting package lookup: {package}",
+  "@packageLookupStarted": {
+    "placeholders": {
+      "package": {
+        "type": "String"
+      }
+    }
+  },
+  "packageLookupFinished": "Package lookup finished · Results: {count}",
+  "@packageLookupFinished": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "searchPageStarted": "Loading search page {page}: {query}",
+  "@searchPageStarted": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchPageFinished": "Search page {page} finished · Results: {count}",
+  "@searchPageFinished": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "noAppDetails": "No app details returned",
+  "candidateNoLinks": "{name}: No usable download links found",
+  "@candidateNoLinks": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "wrongHomeSource": "This catalog tab does not belong to the current home source",
+  "sourceDisabled": "Source is not enabled: {id}",
+  "@sourceDisabled": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "debugProjectStarted": "Starting debug project: {name} · {input}",
+  "@debugProjectStarted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "input": {
+        "type": "String"
+      }
+    }
+  },
+  "debugProjectError": "Debug project failed: {name} · {error}",
+  "@debugProjectError": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationInstallFailed": "Installation from notification failed: {name} · {error}",
+  "@notificationInstallFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "appStateClosed": "App state has been closed",
+  "downloadPermissionMissing": "This source has not declared download permission",
+  "downloadUrlDenied": "Source permissions deny access to the download URL",
+  "noExternalDownloader": "No external downloader available",
+  "externalDownloadReceived": "{method} received: {name}",
+  "@externalDownloadReceived": {
+    "placeholders": {
+      "method": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadStarting": "Starting download: {name}",
+  "@downloadStarting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadPausing": "Pausing download: {name}",
+  "@downloadPausing": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadPauseFailed": "Unable to pause download: {name} · {error}",
+  "@downloadPauseFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadResuming": "Resuming download: {name}",
+  "@downloadResuming": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadResumeFailed": "Unable to resume download: {name} · {error}",
+  "@downloadResumeFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadCanceling": "Canceling download: {name}",
+  "@downloadCanceling": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadCancelCleanupFailed": "Unable to clean up canceled download: {name} · {error}",
+  "@downloadCancelCleanupFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadDeleteFailed": "Unable to delete download file: {name} · {error}",
+  "@downloadDeleteFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadDeleting": "Deleting download: {name}",
+  "@downloadDeleting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadSessionCleanupFailed": "Unable to clean up download session: {name} · {error}",
+  "@downloadSessionCleanupFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadCompleted": "Download completed: {name}",
+  "@downloadCompleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadCanceled": "Download canceled: {name}",
+  "@downloadCanceled": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadError": "Download failed: {name} · {error}",
+  "@downloadError": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadNotComplete": "The download has not finished",
+  "installationInProgress": "This installation is already in progress",
+  "microsoftTranslator": "Microsoft Edge/Bing",
+  "freeTranslator": "Free translation service",
+  "translationCountMismatch": "The number of translations does not match the request",
+  "microsoftResponseInvalid": "Invalid Microsoft translation response",
+  "freeTranslationResponseInvalid": "Invalid free translation service response",
+  "freeTranslationToken": "Free translation service token",
+  "translationTokenMissing": "The free translation service returned no token",
+  "translationJsonInvalid": "The translation response is not valid JSON: {error}",
+  "@translationJsonInvalid": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "simplifiedChinese": "Simplified Chinese",
+  "traditionalChinese": "Traditional Chinese",
+  "englishLanguage": "English",
+  "japaneseLanguage": "Japanese",
+  "koreanLanguage": "Korean",
+  "spanishLanguage": "Spanish",
+  "frenchLanguage": "French",
+  "germanLanguage": "German",
+  "portugueseLanguage": "Portuguese",
+  "appLanguage": "App language",
+  "appLanguageHint": "Changes the interface only, not the translation language for source content",
+  "languageChinese": "简体中文",
+  "languageEnglish": "English"
+}

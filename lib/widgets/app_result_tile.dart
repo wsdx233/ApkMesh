@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_state.dart';
 import '../core/models.dart';
+import '../l10n/app_localizations.dart';
 import 'app_icon.dart';
 
 class AppResultTile extends StatelessWidget {
@@ -174,8 +175,8 @@ Future<void> showAppActionMenu(
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.download_outlined),
-            title: const Text('下载'),
-            subtitle: const Text('后台解析下载链接并加入下载任务'),
+            title: Text(AppLocalizations.of(context).downloadAction),
+            subtitle: Text(AppLocalizations.of(context).backgroundDownloadHint),
             onTap: () =>
                 Navigator.of(sheetContext).pop(_AppListAction.download),
           ),
@@ -185,15 +186,19 @@ Future<void> showAppActionMenu(
                   ? Icons.bookmark_remove_outlined
                   : Icons.bookmark_add_outlined,
             ),
-            title: Text(state.isFavorite(app) ? '取消收藏' : '收藏'),
+            title: Text(
+              state.isFavorite(app)
+                  ? AppLocalizations.of(context).unfavorite
+                  : AppLocalizations.of(context).favoriteAction,
+            ),
             onTap: () =>
                 Navigator.of(sheetContext).pop(_AppListAction.favorite),
           ),
           if (onEnterSelection != null)
             ListTile(
               leading: const Icon(Icons.checklist_outlined),
-              title: const Text('多选'),
-              subtitle: const Text('选择多个应用后批量下载或收藏'),
+              title: Text(AppLocalizations.of(context).multiSelect),
+              subtitle: Text(AppLocalizations.of(context).multiSelectHint),
               onTap: () =>
                   Navigator.of(sheetContext).pop(_AppListAction.select),
             ),
@@ -221,7 +226,9 @@ Future<void> _downloadFromListMenu(
   final messenger = ScaffoldMessenger.maybeOf(context);
   messenger
     ?..hideCurrentSnackBar()
-    ..showSnackBar(const SnackBar(content: Text('正在解析下载链接…')));
+    ..showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context).resolvingDownload)),
+    );
   try {
     final result = await state.downloadApp(app);
     if (!context.mounted || messenger == null) return;
@@ -232,9 +239,17 @@ Future<void> _downloadFromListMenu(
           content: Text(
             result.hasStarted
                 ? result.error == null
-                      ? '已开始下载 ${result.startedFiles} 个文件，可在下载页查看进度'
-                      : '已开始下载 ${result.startedFiles} 个文件，但部分链接处理失败'
-                : '下载失败：${result.error ?? '未找到可用下载链接'}',
+                      ? AppLocalizations.of(
+                          context,
+                        ).filesStarted((result.startedFiles).toString())
+                      : AppLocalizations.of(
+                          context,
+                        ).filesStartedPartial((result.startedFiles).toString())
+                : AppLocalizations.of(context).downloadFailed(
+                    (result.error ??
+                            AppLocalizations.of(context).noDownloadLinks)
+                        .toString(),
+                  ),
           ),
         ),
       );
@@ -242,7 +257,15 @@ Future<void> _downloadFromListMenu(
     if (!context.mounted || messenger == null) return;
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('无法开始下载：$error')));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).cannotStartDownload((error).toString()),
+          ),
+        ),
+      );
   }
 }
 
@@ -268,23 +291,25 @@ class AppSelectionToolbar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            tooltip: '退出多选',
+            tooltip: AppLocalizations.of(context).exitSelection,
             onPressed: onClose,
             icon: const Icon(Icons.close),
           ),
           Expanded(
             child: Text(
-              '已选择 $selectedCount 个应用',
+              AppLocalizations.of(
+                context,
+              ).selectedApps((selectedCount).toString()),
               style: Theme.of(context).textTheme.titleSmall,
             ),
           ),
           IconButton(
-            tooltip: '收藏选中应用',
+            tooltip: AppLocalizations.of(context).favoriteSelectedApps,
             onPressed: onFavorite,
             icon: const Icon(Icons.bookmark_add_outlined),
           ),
           IconButton(
-            tooltip: '下载选中应用',
+            tooltip: AppLocalizations.of(context).downloadSelectedApps,
             onPressed: onDownload,
             icon: const Icon(Icons.download_outlined),
           ),
@@ -397,7 +422,7 @@ class _AppInfoLabel extends StatelessWidget {
     return onPressed == null
         ? label
         : Tooltip(
-            message: '按包名查找应用',
+            message: AppLocalizations.of(context).lookupPackage,
             child: Semantics(
               button: true,
               onTap: onPressed,
@@ -458,7 +483,7 @@ class _AppInfoChip extends StatelessWidget {
       child: onPressed == null
           ? chip
           : Tooltip(
-              message: '按包名查找应用',
+              message: AppLocalizations.of(context).lookupPackage,
               child: Semantics(
                 button: true,
                 onTap: onPressed,

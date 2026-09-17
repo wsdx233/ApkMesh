@@ -1,17 +1,22 @@
+import '../l10n/app_localizations.dart';
+
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+
+import 'app_language.dart';
 
 /// The three consumer/free translation routes supported by the app.
 enum TranslationProvider { microsoft, google, freeModel }
 
 extension TranslationProviderLabel on TranslationProvider {
-  String get label => switch (this) {
-    TranslationProvider.microsoft => '微软 Edge/Bing',
+  String label(AppLocalizations strings) => switch (this) {
+    TranslationProvider.microsoft => strings.microsoftTranslator,
     TranslationProvider.google => 'Google Translate',
-    TranslationProvider.freeModel => '免费翻译服务',
+    TranslationProvider.freeModel => strings.freeTranslator,
   };
 }
 
@@ -42,7 +47,15 @@ class TranslationSettings {
 }
 
 class TranslationService {
-  TranslationService({http.Client? client}) : _client = client ?? http.Client();
+  TranslationService({http.Client? client, this._localizations})
+    : _client = client ?? http.Client();
+
+  final AppLocalizations Function()? _localizations;
+  AppLocalizations get strings =>
+      _localizations?.call() ??
+      lookupAppLocalizations(
+        resolveAppLocale(PlatformDispatcher.instance.locale),
+      );
 
   final http.Client _client;
   String? _freeModelJwt;
@@ -90,7 +103,7 @@ class TranslationService {
         ),
       };
       if (result.length != batch.length) {
-        throw const FormatException('翻译接口返回数量与请求不一致');
+        throw FormatException(strings.translationCountMismatch);
       }
       for (var index = 0; index < batch.length; index++) {
         translated[batch[index].index] += result[index];
@@ -157,7 +170,7 @@ class TranslationService {
     _checkResponse(response, 'Microsoft');
     final decoded = _decodeJson(response.body);
     if (decoded is! List || decoded.length != texts.length) {
-      throw const FormatException('Microsoft 翻译返回格式无效');
+      throw FormatException(strings.microsoftResponseInvalid);
     }
     return decoded
         .map((item) {
@@ -288,13 +301,13 @@ class TranslationService {
     if (response.statusCode == 401) {
       throw const _UnauthorizedTranslationException();
     }
-    _checkResponse(response, '免费翻译服务');
+    _checkResponse(response, strings.freeTranslator);
     final decoded = _decodeJson(response.body);
     final rawSegments = decoded is Map
         ? (decoded['result'] is Map ? decoded['result']['segments'] : null)
         : null;
     if (rawSegments is! List) {
-      throw const FormatException('免费翻译服务返回格式无效');
+      throw FormatException(strings.freeTranslationResponseInvalid);
     }
     final values = <String>[];
     final byId = <String, String>{};
@@ -332,11 +345,11 @@ class TranslationService {
     final response = await _client
         .get(uri, headers: {'Accept-Language': language})
         .timeout(const Duration(seconds: 15));
-    _checkResponse(response, '免费翻译服务 Token');
+    _checkResponse(response, strings.freeTranslationToken);
     final decoded = _decodeJson(response.body);
     final token = decoded is Map ? decoded['data']?.toString() : null;
     if (token == null || token.isEmpty) {
-      throw const FormatException('免费翻译服务没有返回 Token');
+      throw FormatException(strings.translationTokenMissing);
     }
     _freeModelJwt = token;
     _freeModelTokenExpiresAt =
@@ -359,11 +372,11 @@ class TranslationService {
     }
   }
 
-  static dynamic _decodeJson(String body) {
+  dynamic _decodeJson(String body) {
     try {
       return jsonDecode(body);
     } catch (error) {
-      throw FormatException('翻译接口返回不是有效 JSON：$error');
+      throw FormatException(strings.translationJsonInvalid((error).toString()));
     }
   }
 
@@ -414,19 +427,20 @@ String translationLanguageCode(String language, TranslationProvider provider) {
   return value;
 }
 
-String translationLanguageLabel(String language) => switch (language) {
-  'system' => '跟随系统',
-  'zh-CN' => '中文简体',
-  'zh-TW' => '中文繁体',
-  'en' => '英语',
-  'ja' => '日语',
-  'ko' => '韩语',
-  'es' => '西班牙语',
-  'fr' => '法语',
-  'de' => '德语',
-  'pt' => '葡萄牙语',
-  _ => language,
-};
+String translationLanguageLabel(String language, AppLocalizations strings) =>
+    switch (language) {
+      'system' => strings.followSystem,
+      'zh-CN' => strings.simplifiedChinese,
+      'zh-TW' => strings.traditionalChinese,
+      'en' => strings.englishLanguage,
+      'ja' => strings.japaneseLanguage,
+      'ko' => strings.koreanLanguage,
+      'es' => strings.spanishLanguage,
+      'fr' => strings.frenchLanguage,
+      'de' => strings.germanLanguage,
+      'pt' => strings.portugueseLanguage,
+      _ => language,
+    };
 
 String _systemLanguageCode() {
   final locale = WidgetsBinding.instance.platformDispatcher.locale;

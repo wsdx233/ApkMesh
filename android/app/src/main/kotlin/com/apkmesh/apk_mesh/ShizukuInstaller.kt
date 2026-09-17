@@ -30,7 +30,7 @@ import rikka.shizuku.Shizuku
 import rikka.shizuku.ShizukuBinderWrapper
 import rikka.shizuku.SystemServiceHelper
 
-class ShizukuInstaller(context: Context) {
+class ShizukuInstaller(context: Context, private val localizedContext: () -> Context) {
     private val appContext = context.applicationContext
     private val mainHandler = Handler(Looper.getMainLooper())
     private val executor = Executors.newSingleThreadExecutor()
@@ -64,9 +64,9 @@ class ShizukuInstaller(context: Context) {
         }
         if (rejected) {
             val message = if (disposed) {
-                "安装服务已关闭"
+                localizedContext().getString(R.string.install_service_closed)
             } else {
-                "已有 Shizuku 安装任务正在进行"
+                localizedContext().getString(R.string.shizuku_install_busy)
             }
             dispatch { onError("SHIZUKU_INSTALL_BUSY", message) }
             return
@@ -75,7 +75,7 @@ class ShizukuInstaller(context: Context) {
             fail(
                 request,
                 "SHIZUKU_PERMISSION_DENIED",
-                "Shizuku 未运行或未授予 APK Mesh 权限",
+                localizedContext().getString(R.string.shizuku_not_authorized),
             )
             return
         }
@@ -85,7 +85,7 @@ class ShizukuInstaller(context: Context) {
             request,
             installTimeoutMillis,
             "SHIZUKU_INSTALL_TIMEOUT",
-            "Shizuku 安装超时",
+            localizedContext().getString(R.string.shizuku_install_timeout),
         )
         try {
             executor.execute { runInstall(request) }
@@ -93,7 +93,7 @@ class ShizukuInstaller(context: Context) {
             fail(
                 request,
                 "SHIZUKU_INSTALL_UNAVAILABLE",
-                error.message ?: "无法执行 Shizuku 安装",
+                error.message ?: localizedContext().getString(R.string.shizuku_install_unavailable),
             )
         }
     }
@@ -104,7 +104,7 @@ class ShizukuInstaller(context: Context) {
             activeRequest
         }
         if (request != null) {
-            fail(request, "SHIZUKU_INSTALL_CANCELLED", "安装服务已关闭")
+            fail(request, "SHIZUKU_INSTALL_CANCELLED", localizedContext().getString(R.string.install_service_closed))
         }
         executor.shutdownNow()
     }
@@ -112,19 +112,19 @@ class ShizukuInstaller(context: Context) {
     private fun runInstall(request: InstallRequest) {
         val file = File(request.filePath)
         if (!file.isFile) {
-            fail(request, "APK_FILE_NOT_FOUND", "找不到要安装的 APK 文件")
+            fail(request, "APK_FILE_NOT_FOUND", localizedContext().getString(R.string.install_apk_not_found))
             return
         }
         val size = file.length()
         if (size <= 0) {
-            fail(request, "APK_FILE_INVALID", "APK 文件为空")
+            fail(request, "APK_FILE_INVALID", localizedContext().getString(R.string.apk_empty))
             return
         }
         val packageName = appContext.packageManager
             .getPackageArchiveInfo(file.path, 0)
             ?.packageName
         if (packageName.isNullOrBlank()) {
-            fail(request, "APK_FILE_INVALID", "无法读取 APK 包名")
+            fail(request, "APK_FILE_INVALID", localizedContext().getString(R.string.apk_package_name_failed))
             return
         }
 
@@ -159,7 +159,7 @@ class ShizukuInstaller(context: Context) {
             val receiver = LocalIntentReceiver()
             session.commit(receiver.intentSender)
             val result = receiver.awaitResult(resultTimeoutMillis)
-                ?: throw IllegalStateException("等待 PackageInstaller 结果超时")
+                ?: throw IllegalStateException(localizedContext().getString(R.string.package_installer_timeout))
             val status = result.getIntExtra(
                 PackageInstaller.EXTRA_STATUS,
                 PackageInstaller.STATUS_FAILURE,
@@ -174,12 +174,12 @@ class ShizukuInstaller(context: Context) {
                 PackageInstaller.STATUS_PENDING_USER_ACTION -> fail(
                     request,
                     "SHIZUKU_USER_ACTION_REQUIRED",
-                    "系统仍要求用户确认安装，当前设备不允许 Shizuku 静默安装",
+                    localizedContext().getString(R.string.install_confirmation_required),
                 )
                 else -> fail(
                     request,
                     "SHIZUKU_INSTALL_FAILED",
-                    message ?: "PackageInstaller 安装失败，状态码：$status",
+                    message ?: localizedContext().getString(R.string.package_installer_failed_status, status),
                 )
             }
         } catch (error: Throwable) {
@@ -187,7 +187,7 @@ class ShizukuInstaller(context: Context) {
             fail(
                 request,
                 "SHIZUKU_INSTALL_FAILED",
-                error.message ?: "Shizuku PackageInstaller 安装失败",
+                error.message ?: localizedContext().getString(R.string.shizuku_package_installer_failed),
             )
         } finally {
             runCatching { session?.close() }
@@ -199,7 +199,7 @@ class ShizukuInstaller(context: Context) {
 
     private fun createPackageInstaller(): PackageInstaller {
         val packageManagerBinder = SystemServiceHelper.getSystemService("package")
-            ?: throw IllegalStateException("无法连接系统 Package Manager")
+            ?: throw IllegalStateException(localizedContext().getString(R.string.package_manager_unavailable))
         val packageManager = IPackageManager.Stub.asInterface(
             ShizukuBinderWrapper(packageManagerBinder),
         )

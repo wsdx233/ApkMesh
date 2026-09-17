@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_state.dart';
 import '../core/models.dart';
+import '../l10n/app_localizations.dart';
 import 'source_debug_test_sheet.dart';
 import 'source_test_sheet.dart';
 
@@ -88,15 +89,19 @@ class _SourcesPageState extends State<SourcesPage> {
               ? null
               : _openBatchTest,
           icon: const Icon(Icons.fact_check_outlined),
-          label: const Text('批量测试'),
+          label: Text(AppLocalizations.of(context).batchTest),
         );
         final importButton = FilledButton.icon(
           onPressed: () => _showAddSource(context),
           icon: const Icon(Icons.add),
-          label: const Text('导入源'),
+          label: Text(AppLocalizations.of(context).importSource),
         );
         final title = Text(
-          _selectionMode ? '已选择 ${_selectedSourceIds.length} 个源' : '源管理',
+          _selectionMode
+              ? AppLocalizations.of(
+                  context,
+                ).selectedSources((_selectedSourceIds.length).toString())
+              : AppLocalizations.of(context).sources,
           style: Theme.of(context).textTheme.headlineMedium,
         );
 
@@ -108,7 +113,7 @@ class _SourcesPageState extends State<SourcesPage> {
                 children: [
                   if (_selectionMode)
                     IconButton(
-                      tooltip: '退出多选',
+                      tooltip: AppLocalizations.of(context).exitSelection,
                       onPressed: _exitSelection,
                       icon: const Icon(Icons.close),
                     ),
@@ -136,7 +141,7 @@ class _SourcesPageState extends State<SourcesPage> {
           children: [
             if (_selectionMode)
               IconButton(
-                tooltip: '退出多选',
+                tooltip: AppLocalizations.of(context).exitSelection,
                 onPressed: _exitSelection,
                 icon: const Icon(Icons.close),
               ),
@@ -157,29 +162,29 @@ class _SourcesPageState extends State<SourcesPage> {
 
   List<Widget> _buildSelectionActions() => [
     IconButton(
-      tooltip: '全选',
+      tooltip: AppLocalizations.of(context).selectAll,
       onPressed: _selectAll,
       icon: const Icon(Icons.select_all),
     ),
     IconButton(
-      tooltip: '反选',
+      tooltip: AppLocalizations.of(context).invertSelection,
       onPressed: _invertSelection,
       icon: const Icon(Icons.swap_vert),
     ),
     IconButton(
-      tooltip: '区间选择',
+      tooltip: AppLocalizations.of(context).selectRange,
       onPressed: _selectRange,
       icon: const Icon(Icons.unfold_more),
     ),
     IconButton(
-      tooltip: '开启选中源',
+      tooltip: AppLocalizations.of(context).enableSelectedSources,
       onPressed: _selectedSourceIds.isEmpty
           ? null
           : () => _setSelectedEnabled(true),
       icon: const Icon(Icons.toggle_on_outlined),
     ),
     IconButton(
-      tooltip: '关闭选中源',
+      tooltip: AppLocalizations.of(context).disableSelectedSources,
       onPressed: _selectedSourceIds.isEmpty
           ? null
           : () => _setSelectedEnabled(false),
@@ -188,36 +193,45 @@ class _SourcesPageState extends State<SourcesPage> {
   ];
 
   Widget _buildOverflowMenu() => PopupMenuButton<_SourceBulkAction>(
-    tooltip: '批量管理',
+    tooltip: AppLocalizations.of(context).bulkActions,
     icon: const Icon(Icons.more_vert),
     onSelected: _handleBulkAction,
     itemBuilder: (context) => [
-      const PopupMenuItem(
+      PopupMenuItem(
         value: _SourceBulkAction.selectAll,
-        child: _BulkActionMenuLabel(icon: Icons.select_all, label: '全选'),
+        child: _BulkActionMenuLabel(
+          icon: Icons.select_all,
+          label: AppLocalizations.of(context).selectAll,
+        ),
       ),
-      const PopupMenuItem(
+      PopupMenuItem(
         value: _SourceBulkAction.invert,
-        child: _BulkActionMenuLabel(icon: Icons.swap_vert, label: '反选'),
+        child: _BulkActionMenuLabel(
+          icon: Icons.swap_vert,
+          label: AppLocalizations.of(context).invertSelection,
+        ),
       ),
-      const PopupMenuItem(
+      PopupMenuItem(
         value: _SourceBulkAction.range,
-        child: _BulkActionMenuLabel(icon: Icons.unfold_more, label: '区间选择'),
+        child: _BulkActionMenuLabel(
+          icon: Icons.unfold_more,
+          label: AppLocalizations.of(context).selectRange,
+        ),
       ),
       PopupMenuItem(
         value: _SourceBulkAction.enable,
         enabled: _selectedSourceIds.isNotEmpty,
-        child: const _BulkActionMenuLabel(
+        child: _BulkActionMenuLabel(
           icon: Icons.toggle_on_outlined,
-          label: '开启',
+          label: AppLocalizations.of(context).enable,
         ),
       ),
       PopupMenuItem(
         value: _SourceBulkAction.disable,
         enabled: _selectedSourceIds.isNotEmpty,
-        child: const _BulkActionMenuLabel(
+        child: _BulkActionMenuLabel(
           icon: Icons.toggle_off_outlined,
-          label: '关闭',
+          label: AppLocalizations.of(context).disable,
         ),
       ),
     ],
@@ -299,9 +313,9 @@ class _SourcesPageState extends State<SourcesPage> {
         );
     final end = _rangeEnd ?? anchor;
     if (anchor < 0 || end < 0) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('请先选择区间起点和终点')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).selectRangeHint)),
+      );
       return;
     }
     final start = anchor < end ? anchor : end;
@@ -359,14 +373,18 @@ class _SourcesPageState extends State<SourcesPage> {
                   return;
                 }
                 Navigator.pop(dialogContext);
+                if (!context.mounted) return;
                 final message = result.failures.isEmpty
-                    ? '已导入 ${result.imported.length} 个源'
-                    : '已导入 ${result.imported.length} 个源，失败 ${result.failures.length} 个';
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(message)));
-                }
+                    ? AppLocalizations.of(
+                        context,
+                      ).sourcesImported((result.imported.length).toString())
+                    : AppLocalizations.of(context).sourcesImportedWithErrors(
+                        (result.imported.length).toString(),
+                        (result.failures.length).toString(),
+                      );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(message)));
               } catch (importError) {
                 if (!dialogContext.mounted) return;
                 setDialogState(() {
@@ -382,7 +400,7 @@ class _SourcesPageState extends State<SourcesPage> {
             }
 
             return AlertDialog(
-              title: const Text('导入源'),
+              title: Text(AppLocalizations.of(context).importSource),
               content: SizedBox(
                 width: 420,
                 child: Column(
@@ -392,8 +410,8 @@ class _SourcesPageState extends State<SourcesPage> {
                     TextField(
                       controller: url,
                       enabled: !busy,
-                      decoration: const InputDecoration(
-                        labelText: '源 URL',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context).sourceUrl,
                         hintText: 'https://example.com/source.js',
                       ),
                       keyboardType: TextInputType.url,
@@ -422,7 +440,9 @@ class _SourcesPageState extends State<SourcesPage> {
                               return state.importSourceBytes(bytes, file.name);
                             }),
                       icon: const Icon(Icons.folder_open_outlined),
-                      label: const Text('从系统文件选择 JS 或 ZIP'),
+                      label: Text(
+                        AppLocalizations.of(context).importSourceFile,
+                      ),
                     ),
                     if (error != null) ...[
                       const SizedBox(height: 12),
@@ -439,7 +459,7 @@ class _SourcesPageState extends State<SourcesPage> {
               actions: [
                 TextButton(
                   onPressed: busy ? null : () => Navigator.pop(dialogContext),
-                  child: const Text('取消'),
+                  child: Text(AppLocalizations.of(context).cancel),
                 ),
                 FilledButton.icon(
                   onPressed: busy
@@ -447,7 +467,9 @@ class _SourcesPageState extends State<SourcesPage> {
                       : () {
                           if (url.text.trim().isEmpty) {
                             setDialogState(() {
-                              error = '请输入源 URL';
+                              error = AppLocalizations.of(
+                                context,
+                              ).enterSourceUrl;
                             });
                             return;
                           }
@@ -460,7 +482,7 @@ class _SourcesPageState extends State<SourcesPage> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.download),
-                  label: const Text('从 URL 导入'),
+                  label: Text(AppLocalizations.of(context).importSourceUrl),
                 ),
               ],
             );
@@ -545,14 +567,16 @@ class SourceTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   PopupMenuButton<SourceDebugProject>(
-                    tooltip: '查看测试项目',
+                    tooltip: AppLocalizations.of(context).viewTestProjects,
                     onSelected: (project) =>
                         showSourceDebugTestSheet(context, state, project),
                     itemBuilder: (context) => projects.isEmpty
-                        ? const [
+                        ? [
                             PopupMenuItem<SourceDebugProject>(
                               enabled: false,
-                              child: Text('暂无可测试项目'),
+                              child: Text(
+                                AppLocalizations.of(context).noTestProjects,
+                              ),
                             ),
                           ]
                         : projects
@@ -588,9 +612,9 @@ class SourceTile extends StatelessWidget {
                                 ),
                               )
                               .toList(),
-                    child: const Chip(
+                    child: Chip(
                       avatar: Icon(Icons.fact_check_outlined, size: 18),
-                      label: Text('测试'),
+                      label: Text(AppLocalizations.of(context).test),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -599,7 +623,7 @@ class SourceTile extends StatelessWidget {
                         ? null
                         : const Icon(Icons.home_outlined, size: 18),
                     showCheckmark: true,
-                    label: const Text('主页'),
+                    label: Text(AppLocalizations.of(context).home),
                     selected: source.homeSource,
                     onSelected: enabled
                         ? (selected) {
@@ -609,7 +633,7 @@ class SourceTile extends StatelessWidget {
                   ),
                   if (!source.builtIn)
                     IconButton(
-                      tooltip: '删除源',
+                      tooltip: AppLocalizations.of(context).deleteSource,
                       icon: const Icon(Icons.delete_outline),
                       onPressed: () => state.removeSource(source.id),
                     ),

@@ -5,6 +5,8 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
+import android.content.res.Configuration
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -42,7 +44,15 @@ class MainActivity : FlutterActivity() {
                 },
             )
         }
-    private val shizukuInstaller = lazy { ShizukuInstaller(applicationContext) }
+    private lateinit var languageContext: Context
+    private val shizukuInstaller = lazy { ShizukuInstaller(applicationContext) { languageContext } }
+
+    private fun updateAppLanguage(languageCode: String) {
+        val locale = Locale(if (languageCode == "zh") "zh" else "en")
+        val configuration = Configuration(resources.configuration).apply { setLocale(locale) }
+        languageContext = createConfigurationContext(configuration)
+        createNotificationChannels()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +61,16 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        createNotificationChannels()
+        updateAppLanguage(Locale.getDefault().language)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.apkmesh/localization")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "setLanguage") {
+                    updateAppLanguage(call.argument<String>("languageCode") ?: "en")
+                    result.success(null)
+                } else {
+                    result.notImplemented()
+                }
+            }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.apkmesh/install")
             .setMethodCallHandler { call, result ->
@@ -79,7 +98,7 @@ class MainActivity : FlutterActivity() {
                         if (filePath.isNullOrBlank()) {
                             result.error(
                                 "APK_FILE_INVALID",
-                                "未提供 APK 文件路径",
+                                languageContext.getString(R.string.apk_path_missing),
                                 null,
                             )
                         } else {
@@ -151,7 +170,7 @@ class MainActivity : FlutterActivity() {
         val rawUrl = call.argument<String>("url")
         val uri = rawUrl?.let(Uri::parse)
         if (uri == null || (uri.scheme != "http" && uri.scheme != "https")) {
-            result.error("DOWNLOAD_URL_INVALID", "外部下载地址无效", null)
+            result.error("DOWNLOAD_URL_INVALID", languageContext.getString(R.string.download_url_invalid), null)
             return
         }
 
@@ -172,7 +191,7 @@ class MainActivity : FlutterActivity() {
             }
         }
         try {
-            startActivity(Intent.createChooser(intent, "选择下载器"))
+            startActivity(Intent.createChooser(intent, languageContext.getString(R.string.choose_downloader)))
             result.success(true)
         } catch (_: Exception) {
             result.success(false)
@@ -181,7 +200,7 @@ class MainActivity : FlutterActivity() {
 
     override fun onDestroy() {
         pendingShizukuPermissionResult?.let {
-            it.error("SHIZUKU_ACTIVITY_DESTROYED", "安装页面已关闭", null)
+            it.error("SHIZUKU_ACTIVITY_DESTROYED", languageContext.getString(R.string.install_page_closed), null)
         }
         pendingShizukuPermissionResult = null
         Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener)
@@ -209,7 +228,7 @@ class MainActivity : FlutterActivity() {
                 if (pendingShizukuPermissionResult != null) {
                     result.error(
                         "SHIZUKU_PERMISSION_PENDING",
-                        "正在等待 Shizuku 授权结果",
+                        languageContext.getString(R.string.shizuku_permission_pending),
                         null,
                     )
                     return
@@ -221,7 +240,7 @@ class MainActivity : FlutterActivity() {
                     pendingShizukuPermissionResult = null
                     result.error(
                         "SHIZUKU_PERMISSION_REQUEST_FAILED",
-                        error.message ?: "无法请求 Shizuku 权限",
+                        error.message ?: languageContext.getString(R.string.shizuku_permission_failed),
                         null,
                     )
                 }
@@ -233,19 +252,19 @@ class MainActivity : FlutterActivity() {
     private fun inspectInstall(call: MethodCall, result: MethodChannel.Result) {
         val filePath = call.argument<String>("filePath")
         if (filePath.isNullOrBlank()) {
-            result.success(installInfoError("未提供 APK 文件路径"))
+            result.success(installInfoError(languageContext.getString(R.string.apk_path_missing)))
             return
         }
         val file = File(filePath)
         if (!file.isFile) {
-            result.success(installInfoError("找不到 APK 文件"))
+            result.success(installInfoError(languageContext.getString(R.string.apk_not_found)))
             return
         }
         try {
             val archive = packageManager.getPackageArchiveInfo(filePath, 0)
             val packageName = archive?.packageName
             if (archive == null || packageName.isNullOrBlank()) {
-                result.success(installInfoError("无法读取 APK 包信息"))
+                result.success(installInfoError(languageContext.getString(R.string.apk_info_failed)))
                 return
             }
             val installed = try {
@@ -274,7 +293,7 @@ class MainActivity : FlutterActivity() {
                 ),
             )
         } catch (error: Exception) {
-            result.success(installInfoError(error.message ?: "无法读取安装状态"))
+            result.success(installInfoError(error.message ?: languageContext.getString(R.string.install_status_failed)))
         }
     }
 
@@ -351,16 +370,16 @@ class MainActivity : FlutterActivity() {
         manager.createNotificationChannel(
             NotificationChannel(
                 progressChannelId,
-                "下载进度",
+                languageContext.getString(R.string.download_progress),
                 NotificationManager.IMPORTANCE_LOW,
-            ).apply { description = "APK 文件下载进度" },
+            ).apply { description = languageContext.getString(R.string.download_progress_description) },
         )
         manager.createNotificationChannel(
             NotificationChannel(
                 eventChannelId,
-                "下载结果",
+                languageContext.getString(R.string.download_results),
                 NotificationManager.IMPORTANCE_DEFAULT,
-            ).apply { description = "APK 文件下载完成或失败" },
+            ).apply { description = languageContext.getString(R.string.download_results_description) },
         )
     }
 
@@ -380,15 +399,15 @@ class MainActivity : FlutterActivity() {
     private fun showDownloadProgress(call: MethodCall, paused: Boolean = false) {
         if (!canPostNotifications()) return
         val id = call.argument<String>("id") ?: return
-        val title = call.argument<String>("title") ?: "APK 下载"
+        val title = call.argument<String>("title") ?: languageContext.getString(R.string.apk_download)
         val received = call.argument<Number>("received")?.toLong() ?: 0L
         val total = call.argument<Number>("total")?.toLong()
         val text = if (total != null && total > 0) {
             val progress = "${formatBytes(received)} / ${formatBytes(total)}"
-            if (paused) "已暂停 · $progress" else progress
+            if (paused) languageContext.getString(R.string.download_paused, progress) else progress
         } else {
-            val progress = "已下载 ${formatBytes(received)}"
-            if (paused) "已暂停 · $progress" else progress
+            val progress = languageContext.getString(R.string.download_received, formatBytes(received))
+            if (paused) languageContext.getString(R.string.download_paused, progress) else progress
         }
         val builder = notificationBuilder(progressChannelId)
             .setSmallIcon(
@@ -410,7 +429,7 @@ class MainActivity : FlutterActivity() {
         }
         launchPendingIntent()?.let(builder::setContentIntent)
         val nextAction = if (paused) "resume" else "pause"
-        val nextLabel = if (paused) "继续" else "暂停"
+        val nextLabel = if (paused) languageContext.getString(R.string.resume) else languageContext.getString(R.string.pause)
         builder.addAction(
             if (paused) android.R.drawable.ic_media_play
             else android.R.drawable.ic_media_pause,
@@ -419,7 +438,7 @@ class MainActivity : FlutterActivity() {
         )
         builder.addAction(
             android.R.drawable.ic_menu_close_clear_cancel,
-            "停止",
+            languageContext.getString(R.string.stop),
             notificationActionPendingIntent(id, "stop"),
         )
         notificationManager().notify(notificationId(id), builder.build())
@@ -433,16 +452,16 @@ class MainActivity : FlutterActivity() {
     private fun showDownloadCompleted(call: MethodCall) {
         if (!canPostNotifications()) return
         val id = call.argument<String>("id") ?: return
-        val title = call.argument<String>("title") ?: "APK 下载"
+        val title = call.argument<String>("title") ?: languageContext.getString(R.string.apk_download)
         val builder = notificationBuilder(eventChannelId)
             .setSmallIcon(android.R.drawable.checkbox_on_background)
             .setContentTitle(title)
-            .setContentText("可安装")
+            .setContentText(languageContext.getString(R.string.ready_to_install))
             .setAutoCancel(true)
         launchPendingIntent()?.let(builder::setContentIntent)
         builder.addAction(
             android.R.drawable.ic_menu_view,
-            "安装",
+            languageContext.getString(R.string.install),
             notificationActionPendingIntent(id, "install"),
         )
         notificationManager().notify(notificationId(id), builder.build())
@@ -451,11 +470,11 @@ class MainActivity : FlutterActivity() {
     private fun showDownloadFailed(call: MethodCall) {
         if (!canPostNotifications()) return
         val id = call.argument<String>("id") ?: return
-        val title = call.argument<String>("title") ?: "APK 下载"
-        val error = call.argument<String>("error") ?: "未知错误"
+        val title = call.argument<String>("title") ?: languageContext.getString(R.string.apk_download)
+        val error = call.argument<String>("error") ?: languageContext.getString(R.string.unknown_error)
         val builder = notificationBuilder(eventChannelId)
             .setSmallIcon(android.R.drawable.stat_notify_error)
-            .setContentTitle("下载失败：$title")
+            .setContentTitle(languageContext.getString(R.string.download_failed, title))
             .setContentText(error)
             .setStyle(Notification.BigTextStyle().bigText(error))
             .setAutoCancel(true)

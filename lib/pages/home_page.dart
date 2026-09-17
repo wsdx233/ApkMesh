@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../core/app_state.dart';
 import '../core/models.dart';
 import '../core/source_runtime.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/app_result_tile.dart';
 import '../widgets/empty_message.dart';
 import 'details_sheet.dart';
@@ -120,7 +121,15 @@ class HomePageState extends State<HomePage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(content: Text(added == 0 ? '所选应用已在收藏中' : '已收藏 $added 个应用')),
+        SnackBar(
+          content: Text(
+            added == 0
+                ? AppLocalizations.of(context).alreadyFavorites
+                : AppLocalizations.of(
+                    context,
+                  ).appsFavorited((added).toString()),
+          ),
+        ),
       );
   }
 
@@ -130,7 +139,13 @@ class HomePageState extends State<HomePage> {
     _exitSelection();
     final messenger = ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('正在后台解析下载链接…')));
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).resolvingDownloadsBackground,
+          ),
+        ),
+      );
     unawaited(_runBatchDownload(apps, messenger));
   }
 
@@ -148,10 +163,15 @@ class HomePageState extends State<HomePage> {
           SnackBar(
             content: Text(
               result.startedFiles == 0
-                  ? '批量下载失败：没有找到可用下载链接'
+                  ? AppLocalizations.of(context).batchDownloadNoLinks
                   : failed == 0
-                  ? '已开始下载 ${result.startedFiles} 个文件，可在下载页查看进度'
-                  : '已开始下载 ${result.startedFiles} 个文件，$failed 个应用存在解析或下载问题',
+                  ? AppLocalizations.of(
+                      context,
+                    ).filesStarted((result.startedFiles).toString())
+                  : AppLocalizations.of(context).filesStartedWithErrors(
+                      (result.startedFiles).toString(),
+                      (failed).toString(),
+                    ),
             ),
           ),
         );
@@ -159,7 +179,15 @@ class HomePageState extends State<HomePage> {
       if (!mounted || !messenger.mounted) return;
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text('批量下载失败：$error')));
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              ).batchDownloadFailed((error).toString()),
+            ),
+          ),
+        );
     }
   }
 
@@ -450,9 +478,9 @@ class HomePageState extends State<HomePage> {
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
         SnackBar(
-          content: const Text('搜索源加载失败'),
+          content: Text(AppLocalizations.of(context).searchSourcesFailed),
           action: SnackBarAction(
-            label: '详情',
+            label: AppLocalizations.of(context).details,
             onPressed: () => _showSearchErrorDetails(message),
           ),
         ),
@@ -627,14 +655,17 @@ class HomePageState extends State<HomePage> {
           .toList(growable: false);
     }
     return [
-      const ContentTab(id: 'all', label: '全部源'),
+      ContentTab(id: 'all', label: AppLocalizations.of(context).allSources),
       for (final source in widget.state.sources)
         if (source.status == SourceStatus.enabled) _sourceTab(source),
     ];
   }
 
   List<ContentTab> _visibleSearchTabs(BuildContext context, double maxWidth) {
-    const allTab = ContentTab(id: 'all', label: '全部源');
+    final allTab = ContentTab(
+      id: 'all',
+      label: AppLocalizations.of(context).allSources,
+    );
     final enabledSources = widget.state.sources
         .where((source) => source.status == SourceStatus.enabled)
         .toList(growable: false);
@@ -749,7 +780,7 @@ class HomePageState extends State<HomePage> {
       children: [
         Expanded(child: tabBar),
         IconButton(
-          tooltip: '筛选搜索源',
+          tooltip: AppLocalizations.of(context).filterSearchSources,
           onPressed: _showSourcePicker,
           icon: const Icon(Icons.filter_list),
         ),
@@ -792,17 +823,20 @@ class HomePageState extends State<HomePage> {
 
   Widget _buildCatalogView(BuildContext context, ContentTab? activeTab) {
     if (!widget.state.hasEnabledSource) {
-      return _buildStaticContent(const [
+      return _buildStaticContent([
         EmptyMessage(
           icon: Icons.hub_outlined,
-          title: '没有启用的源',
-          detail: '请先在源管理中启用一个源。',
+          title: AppLocalizations.of(context).noEnabledSources,
+          detail: AppLocalizations.of(context).noEnabledSourcesHint,
         ),
       ]);
     }
     if (catalogLoading && !catalogLoaded) {
-      return _buildStaticContent(const [
-        SearchLoadingView(icon: Icons.home_outlined, label: '正在加载首页'),
+      return _buildStaticContent([
+        SearchLoadingView(
+          icon: Icons.home_outlined,
+          label: AppLocalizations.of(context).loadingHome,
+        ),
       ]);
     }
     if (catalogError != null && catalog.tabs.isEmpty) {
@@ -811,10 +845,10 @@ class HomePageState extends State<HomePage> {
           color: Theme.of(context).colorScheme.errorContainer,
           child: ListTile(
             leading: const Icon(Icons.error_outline),
-            title: const Text('首页内容加载失败'),
+            title: Text(AppLocalizations.of(context).homeLoadFailed),
             subtitle: Text(catalogError!),
             trailing: IconButton(
-              tooltip: '重试',
+              tooltip: AppLocalizations.of(context).retry,
               icon: const Icon(Icons.refresh),
               onPressed: () => _loadCatalog(force: true),
             ),
@@ -824,18 +858,23 @@ class HomePageState extends State<HomePage> {
     }
     final tab = activeTab?.catalogTab;
     if (tab == null) {
-      return _buildStaticContent(const [
+      return _buildStaticContent([
         EmptyMessage(
           icon: Icons.home_work_outlined,
-          title: '暂无目录内容',
-          detail: '当前主页源没有返回可用标签。',
+          title: AppLocalizations.of(context).noCatalog,
+          detail: AppLocalizations.of(context).noCatalogHint,
         ),
       ]);
     }
     final state = _catalogTabStates[_catalogTabKey(tab)];
     if (state == null || (state.loading && !state.loaded)) {
       return _buildStaticContent([
-        SearchLoadingView(icon: Icons.apps_outlined, label: '正在加载${tab.name}'),
+        SearchLoadingView(
+          icon: Icons.apps_outlined,
+          label: AppLocalizations.of(
+            context,
+          ).loadingNamed((tab.name).toString()),
+        ),
       ]);
     }
     if (state.error != null && state.apps.isEmpty) {
@@ -844,10 +883,14 @@ class HomePageState extends State<HomePage> {
           color: Theme.of(context).colorScheme.errorContainer,
           child: ListTile(
             leading: const Icon(Icons.error_outline),
-            title: Text('${tab.name}加载失败'),
+            title: Text(
+              AppLocalizations.of(
+                context,
+              ).namedLoadFailed((tab.name).toString()),
+            ),
             subtitle: Text(state.error!),
             trailing: IconButton(
-              tooltip: '重试',
+              tooltip: AppLocalizations.of(context).retry,
               icon: const Icon(Icons.refresh),
               onPressed: () => _loadCatalogTab(tab, refresh: true),
             ),
@@ -856,11 +899,11 @@ class HomePageState extends State<HomePage> {
       ]);
     }
     if (state.apps.isEmpty) {
-      return _buildStaticContent(const [
+      return _buildStaticContent([
         EmptyMessage(
           icon: Icons.apps_outage_outlined,
-          title: '暂无应用',
-          detail: '该标签没有返回可用应用。',
+          title: AppLocalizations.of(context).noApps,
+          detail: AppLocalizations.of(context).noAppsHint,
         ),
       ]);
     }
@@ -894,9 +937,9 @@ class HomePageState extends State<HomePage> {
         }
         return ListTile(
           leading: const Icon(Icons.error_outline),
-          title: const Text('加载下一页失败'),
+          title: Text(AppLocalizations.of(context).nextPageFailed),
           trailing: IconButton(
-            tooltip: '重试',
+            tooltip: AppLocalizations.of(context).retry,
             icon: const Icon(Icons.refresh),
             onPressed: () => _loadCatalogTab(tab),
           ),
@@ -909,12 +952,16 @@ class HomePageState extends State<HomePage> {
     if (loading) return const SearchLoadingView();
     return EmptyMessage(
       icon: Icons.manage_search,
-      title: '未找到结果',
+      title: AppLocalizations.of(context).noResults,
       detail: error == null
           ? activeTab.sourceId == null
-                ? '已在所有启用的源中搜索“$submittedQuery”。'
-                : '当前源没有返回“$submittedQuery”的结果。'
-          : '源请求未完成，请打开错误详情查看原因。',
+                ? AppLocalizations.of(
+                    context,
+                  ).searchedAllSources((submittedQuery).toString())
+                : AppLocalizations.of(
+                    context,
+                  ).noSourceResults((submittedQuery).toString())
+          : AppLocalizations.of(context).sourceRequestIncomplete,
     );
   }
 
@@ -929,10 +976,10 @@ class HomePageState extends State<HomePage> {
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
         children: [
           if (!widget.state.hasEnabledSource)
-            const EmptyMessage(
+            EmptyMessage(
               icon: Icons.hub_outlined,
-              title: '没有启用的源',
-              detail: '请先在源管理中启用一个源。',
+              title: AppLocalizations.of(context).noEnabledSources,
+              detail: AppLocalizations.of(context).noEnabledSourcesHint,
             )
           else
             _buildSearchEmpty(context, activeTab),
@@ -1058,7 +1105,7 @@ class _PageJumpDialogState extends State<_PageJumpDialog> {
   void _submit() {
     final page = int.tryParse(_controller.text);
     if (page == null || page < 1) {
-      setState(() => _errorText = '请输入大于 0 的页码');
+      setState(() => _errorText = AppLocalizations.of(context).invalidPage);
       return;
     }
     Navigator.pop(context, page);
@@ -1066,7 +1113,7 @@ class _PageJumpDialogState extends State<_PageJumpDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('跳转页码'),
+    title: Text(AppLocalizations.of(context).jumpToPage),
     content: TextField(
       key: const ValueKey('page-jump-field'),
       controller: _controller,
@@ -1076,7 +1123,7 @@ class _PageJumpDialogState extends State<_PageJumpDialog> {
       textInputAction: TextInputAction.done,
       onSubmitted: (_) => _submit(),
       decoration: InputDecoration(
-        labelText: '页码',
+        labelText: AppLocalizations.of(context).pageNumber,
         prefixIcon: const Icon(Icons.numbers),
         errorText: _errorText,
       ),
@@ -1084,9 +1131,12 @@ class _PageJumpDialogState extends State<_PageJumpDialog> {
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('取消'),
+        child: Text(AppLocalizations.of(context).cancel),
       ),
-      FilledButton(onPressed: _submit, child: const Text('跳转')),
+      FilledButton(
+        onPressed: _submit,
+        child: Text(AppLocalizations.of(context).jump),
+      ),
     ],
   );
 }
@@ -1166,19 +1216,19 @@ class _SourcePickerSheetState extends State<_SourcePickerSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    '搜索源标签',
+                    AppLocalizations.of(context).searchSourceTabs,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
                 IconButton(
-                  tooltip: '恢复自动显示',
+                  tooltip: AppLocalizations.of(context).automaticTabs,
                   onPressed: _selectedIds.isEmpty
                       ? null
                       : () => setState(_selectedIds.clear),
                   icon: const Icon(Icons.restart_alt),
                 ),
                 IconButton(
-                  tooltip: '关闭',
+                  tooltip: AppLocalizations.of(context).close,
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close),
                 ),
@@ -1191,9 +1241,9 @@ class _SourcePickerSheetState extends State<_SourcePickerSheet> {
               controller: _query,
               autofocus: true,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search),
-                hintText: '搜索源名称或域名',
+                hintText: AppLocalizations.of(context).sourceSearchHint,
               ),
             ),
           ),
@@ -1221,7 +1271,9 @@ class _SourcePickerSheetState extends State<_SourcePickerSheet> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        tooltip: '临时查看此源结果',
+                        tooltip: AppLocalizations.of(
+                          context,
+                        ).previewSourceResults,
                         constraints: const BoxConstraints.tightFor(
                           width: 40,
                           height: 40,
@@ -1260,7 +1312,7 @@ class _SourcePickerSheetState extends State<_SourcePickerSheet> {
                   ]),
                 ),
                 icon: const Icon(Icons.check),
-                label: const Text('应用'),
+                label: Text(AppLocalizations.of(context).apply),
               ),
             ),
           ),
@@ -1273,12 +1325,12 @@ class _SourcePickerSheetState extends State<_SourcePickerSheet> {
 class SearchLoadingView extends StatefulWidget {
   const SearchLoadingView({
     this.icon = Icons.manage_search,
-    this.label = '正在搜索',
+    this.label,
     super.key,
   });
 
   final IconData icon;
-  final String label;
+  final String? label;
 
   @override
   State<SearchLoadingView> createState() => _SearchLoadingViewState();
@@ -1341,7 +1393,7 @@ class _SearchLoadingViewState extends State<SearchLoadingView>
               Icon(widget.icon, size: 88, color: scheme.primary),
               const SizedBox(height: 16),
               Text(
-                widget.label,
+                widget.label ?? AppLocalizations.of(context).searching,
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
@@ -1373,19 +1425,21 @@ class SearchErrorSheet extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '搜索错误详情',
+                    AppLocalizations.of(context).searchErrorDetails,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
                 IconButton(
-                  tooltip: '复制报错信息',
+                  tooltip: AppLocalizations.of(context).copyError,
                   icon: const Icon(Icons.copy_outlined),
                   onPressed: () async {
                     await Clipboard.setData(ClipboardData(text: message));
                     if (!context.mounted) return;
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('已复制报错信息')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context).errorCopied),
+                      ),
+                    );
                   },
                 ),
               ],

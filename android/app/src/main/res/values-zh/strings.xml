@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="apk_path_missing">未提供 APK 文件路径</string>
+    <string name="download_url_invalid">外部下载地址无效</string>
+    <string name="choose_downloader">选择下载器</string>
+    <string name="install_page_closed">安装页面已关闭</string>
+    <string name="shizuku_permission_pending">正在等待 Shizuku 授权结果</string>
+    <string name="shizuku_permission_failed">无法请求 Shizuku 权限</string>
+    <string name="apk_not_found">找不到 APK 文件</string>
+    <string name="apk_info_failed">无法读取 APK 包信息</string>
+    <string name="install_status_failed">无法读取安装状态</string>
+    <string name="download_progress">下载进度</string>
+    <string name="download_progress_description">APK 文件下载进度</string>
+    <string name="download_results">下载结果</string>
+    <string name="download_results_description">APK 文件下载完成或失败</string>
+    <string name="apk_download">APK 下载</string>
+    <string name="download_paused">已暂停 · %1$s</string>
+    <string name="download_received">已下载 %1$s</string>
+    <string name="resume">继续</string>
+    <string name="pause">暂停</string>
+    <string name="stop">停止</string>
+    <string name="ready_to_install">可安装</string>
+    <string name="install">安装</string>
+    <string name="unknown_error">未知错误</string>
+    <string name="download_failed">下载失败：%1$s</string>
+    <string name="install_service_closed">安装服务已关闭</string>
+    <string name="shizuku_install_busy">已有 Shizuku 安装任务正在进行</string>
+    <string name="shizuku_not_authorized">Shizuku 未运行或未授予 APK Mesh 权限</string>
+    <string name="shizuku_install_timeout">Shizuku 安装超时</string>
+    <string name="shizuku_install_unavailable">无法执行 Shizuku 安装</string>
+    <string name="install_apk_not_found">找不到要安装的 APK 文件</string>
+    <string name="apk_empty">APK 文件为空</string>
+    <string name="apk_package_name_failed">无法读取 APK 包名</string>
+    <string name="package_installer_timeout">等待 PackageInstaller 结果超时</string>
+    <string name="install_confirmation_required">系统仍要求用户确认安装，当前设备不允许 Shizuku 静默安装</string>
+    <string name="package_installer_failed_status">PackageInstaller 安装失败，状态码：%1$d</string>
+    <string name="shizuku_package_installer_failed">Shizuku PackageInstaller 安装失败</string>
+    <string name="package_manager_unavailable">无法连接系统 Package Manager</string>
+</resources>

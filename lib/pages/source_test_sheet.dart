@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_state.dart';
 import '../core/models.dart';
+import '../l10n/app_localizations.dart';
 
 class SourceBatchTestSheet extends StatefulWidget {
   const SourceBatchTestSheet({required this.state, this.sourceIds, super.key});
@@ -95,16 +96,20 @@ class _SourceBatchTestSheetState extends State<SourceBatchTestSheet> {
     final shouldDisable = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('关闭测试失败的源？'),
-        content: Text('将关闭 ${failed.length} 个测试失败的源。'),
+        title: Text(AppLocalizations.of(context).disableFailedTitle),
+        content: Text(
+          AppLocalizations.of(
+            context,
+          ).disableFailedMessage((failed.length).toString()),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context).cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('关闭源'),
+            child: Text(AppLocalizations.of(context).disableSources),
           ),
         ],
       ),
@@ -143,23 +148,26 @@ class _SourceBatchTestSheetState extends State<SourceBatchTestSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '批量测试源',
+                          AppLocalizations.of(context).batchTestSources,
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                         Text(
-                          '搜索“$_query” · ${_sources.length} 个源',
+                          AppLocalizations.of(context).batchTestQuery(
+                            (_query).toString(),
+                            (_sources.length).toString(),
+                          ),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
                     ),
                   ),
                   IconButton(
-                    tooltip: '重新测试',
+                    tooltip: AppLocalizations.of(context).retest,
                     onPressed: _loading ? null : _runTest,
                     icon: const Icon(Icons.refresh),
                   ),
                   IconButton(
-                    tooltip: '关闭',
+                    tooltip: AppLocalizations.of(context).close,
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close),
                   ),
@@ -180,8 +188,16 @@ class _SourceBatchTestSheetState extends State<SourceBatchTestSheet> {
                   Expanded(
                     child: Text(
                       _loading
-                          ? '正在测试 · 已完成 ${_results.length}/${_sources.length} · 可用 $succeeded 个 · 失败 $failed 个'
-                          : '可用 $succeeded 个 · 失败 $failed 个',
+                          ? AppLocalizations.of(context).batchTestProgress(
+                              (_results.length).toString(),
+                              (_sources.length).toString(),
+                              (succeeded).toString(),
+                              (failed).toString(),
+                            )
+                          : AppLocalizations.of(context).batchTestCounts(
+                              (succeeded).toString(),
+                              (failed).toString(),
+                            ),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
@@ -189,7 +205,11 @@ class _SourceBatchTestSheetState extends State<SourceBatchTestSheet> {
                     FilledButton.icon(
                       onPressed: _disableFailedSources,
                       icon: const Icon(Icons.power_settings_new),
-                      label: Text('关闭失败源 ($failedEnabled)'),
+                      label: Text(
+                        AppLocalizations.of(
+                          context,
+                        ).disableFailedSources((failedEnabled).toString()),
+                      ),
                     ),
                 ],
               ),
@@ -209,7 +229,9 @@ class _SourceBatchTestSheetState extends State<SourceBatchTestSheet> {
                         Icons.error_outline,
                         color: Theme.of(context).colorScheme.error,
                       ),
-                      title: const Text('批量测试未完成'),
+                      title: Text(
+                        AppLocalizations.of(context).batchTestIncomplete,
+                      ),
                       subtitle: Text(_error!),
                     );
                   }
@@ -245,22 +267,34 @@ class _SourceTestTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final (IconData icon, Color? color, String subtitle) = switch (result) {
-      null when loading => (Icons.hourglass_empty, null, '等待测试'),
-      null => (Icons.help_outline, null, '未测试'),
+      null when loading => (
+        Icons.hourglass_empty,
+        null,
+        AppLocalizations.of(context).waitingForTest,
+      ),
+      null => (
+        Icons.help_outline,
+        null,
+        AppLocalizations.of(context).notTested,
+      ),
       final value when value.succeeded => (
         Icons.check_circle_outline,
         Colors.green,
-        '可用 · 搜索返回 ${value.resultCount} 条',
+        AppLocalizations.of(
+          context,
+        ).sourceTestAvailable((value.resultCount).toString()),
       ),
       final value => (
         Icons.error_outline,
         colorScheme.error,
-        '不可用 · ${value.error}',
+        AppLocalizations.of(
+          context,
+        ).sourceTestUnavailable((value.error).toString()),
       ),
     };
     final statusSuffix =
         source.status == SourceStatus.disabled && result?.succeeded == true
-        ? ' · 当前已关闭'
+        ? AppLocalizations.of(context).sourceCurrentlyDisabled
         : '';
     return ListTile(
       contentPadding: EdgeInsets.zero,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_state.dart';
 import '../core/models.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/app_icon.dart';
 import '../widgets/app_result_tile.dart';
 import '../widgets/empty_message.dart';
@@ -72,10 +73,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
         ),
         const SizedBox(height: 20),
         if (tasks.isEmpty)
-          const EmptyMessage(
+          EmptyMessage(
             icon: Icons.download_done_outlined,
-            title: '暂无下载任务',
-            detail: '从应用详情中选择文件后，任务会显示在这里。',
+            title: AppLocalizations.of(context).noDownloads,
+            detail: AppLocalizations.of(context).noDownloadsHint,
           )
         else
           ...tasks.asMap().entries.map(
@@ -105,7 +106,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
         final compact = constraints.maxWidth < 520;
         final showAllSelectionActions = constraints.maxWidth >= 760;
         final title = Text(
-          _selectionMode ? '已选择 ${_selectedDownloadIds.length} 个下载' : '下载管理',
+          _selectionMode
+              ? AppLocalizations.of(
+                  context,
+                ).selectedDownloads((_selectedDownloadIds.length).toString())
+              : AppLocalizations.of(context).downloadManager,
           style: Theme.of(context).textTheme.headlineMedium,
         );
 
@@ -127,7 +132,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
               Row(
                 children: [
                   IconButton(
-                    tooltip: '退出多选',
+                    tooltip: AppLocalizations.of(context).exitSelection,
                     onPressed: _exitSelection,
                     icon: const Icon(Icons.close),
                   ),
@@ -146,7 +151,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
         return Row(
           children: [
             IconButton(
-              tooltip: '退出多选',
+              tooltip: AppLocalizations.of(context).exitSelection,
               onPressed: _exitSelection,
               icon: const Icon(Icons.close),
             ),
@@ -167,51 +172,54 @@ class _DownloadsPageState extends State<DownloadsPage> {
     int completedCount,
   ) => PopupMenuButton<DownloadClearAction>(
     enabled: tasks.isNotEmpty,
-    tooltip: '清理下载',
+    tooltip: AppLocalizations.of(context).cleanDownloads,
     icon: const Icon(Icons.delete_sweep_outlined),
     onSelected: (action) => confirmClearDownloads(context, state, action),
     itemBuilder: (context) => [
-      const PopupMenuItem(value: DownloadClearAction.all, child: Text('清除全部')),
+      PopupMenuItem(
+        value: DownloadClearAction.all,
+        child: Text(AppLocalizations.of(context).clearAll),
+      ),
       PopupMenuItem(
         value: DownloadClearAction.completed,
         enabled: completedCount > 0,
-        child: const Text('清除已下载'),
+        child: Text(AppLocalizations.of(context).clearCompleted),
       ),
     ],
   );
 
   List<Widget> _buildSelectionActions() => [
     IconButton(
-      tooltip: '全选',
+      tooltip: AppLocalizations.of(context).selectAll,
       onPressed: _selectAll,
       icon: const Icon(Icons.select_all),
     ),
     IconButton(
-      tooltip: '反选',
+      tooltip: AppLocalizations.of(context).invertSelection,
       onPressed: _invertSelection,
       icon: const Icon(Icons.swap_vert),
     ),
     IconButton(
-      tooltip: '区间选择',
+      tooltip: AppLocalizations.of(context).selectRange,
       onPressed: _selectRange,
       icon: const Icon(Icons.unfold_more),
     ),
     IconButton(
-      tooltip: '暂停选中下载',
+      tooltip: AppLocalizations.of(context).pauseSelectedDownloads,
       onPressed: _selectedTasksWithStatus({DownloadStatus.downloading}).isEmpty
           ? null
           : () => unawaited(_pauseSelected()),
       icon: const Icon(Icons.pause_circle_outline),
     ),
     IconButton(
-      tooltip: '继续选中下载',
+      tooltip: AppLocalizations.of(context).resumeSelectedDownloads,
       onPressed: _selectedTasksWithStatus({DownloadStatus.paused}).isEmpty
           ? null
           : () => unawaited(_resumeSelected()),
       icon: const Icon(Icons.play_circle_outline),
     ),
     IconButton(
-      tooltip: '取消选中下载',
+      tooltip: AppLocalizations.of(context).cancelSelectedDownloads,
       onPressed:
           _selectedTasksWithStatus({
             DownloadStatus.downloading,
@@ -222,14 +230,14 @@ class _DownloadsPageState extends State<DownloadsPage> {
       icon: const Icon(Icons.cancel_outlined),
     ),
     IconButton(
-      tooltip: '重试选中下载',
+      tooltip: AppLocalizations.of(context).retrySelectedDownloads,
       onPressed: _selectedTasksWithStatus({DownloadStatus.failed}).isEmpty
           ? null
           : _retrySelected,
       icon: const Icon(Icons.refresh),
     ),
     IconButton(
-      tooltip: '删除选中下载',
+      tooltip: AppLocalizations.of(context).deleteSelectedDownloads,
       onPressed:
           _selectedTasksWithStatus({
             DownloadStatus.completed,
@@ -242,26 +250,29 @@ class _DownloadsPageState extends State<DownloadsPage> {
   ];
 
   Widget _buildOverflowMenu() => PopupMenuButton<_DownloadBulkAction>(
-    tooltip: '批量管理',
+    tooltip: AppLocalizations.of(context).bulkActions,
     icon: const Icon(Icons.more_vert),
     onSelected: _handleBulkAction,
     itemBuilder: (context) => [
-      const PopupMenuItem(
+      PopupMenuItem(
         value: _DownloadBulkAction.selectAll,
         child: _DownloadBulkActionMenuLabel(
           icon: Icons.select_all,
-          label: '全选',
+          label: AppLocalizations.of(context).selectAll,
         ),
       ),
-      const PopupMenuItem(
+      PopupMenuItem(
         value: _DownloadBulkAction.invert,
-        child: _DownloadBulkActionMenuLabel(icon: Icons.swap_vert, label: '反选'),
+        child: _DownloadBulkActionMenuLabel(
+          icon: Icons.swap_vert,
+          label: AppLocalizations.of(context).invertSelection,
+        ),
       ),
-      const PopupMenuItem(
+      PopupMenuItem(
         value: _DownloadBulkAction.range,
         child: _DownloadBulkActionMenuLabel(
           icon: Icons.unfold_more,
-          label: '区间选择',
+          label: AppLocalizations.of(context).selectRange,
         ),
       ),
       PopupMenuItem(
@@ -269,17 +280,17 @@ class _DownloadsPageState extends State<DownloadsPage> {
         enabled: _selectedTasksWithStatus({
           DownloadStatus.downloading,
         }).isNotEmpty,
-        child: const _DownloadBulkActionMenuLabel(
+        child: _DownloadBulkActionMenuLabel(
           icon: Icons.pause_circle_outline,
-          label: '暂停选中下载',
+          label: AppLocalizations.of(context).pauseSelectedDownloads,
         ),
       ),
       PopupMenuItem(
         value: _DownloadBulkAction.resume,
         enabled: _selectedTasksWithStatus({DownloadStatus.paused}).isNotEmpty,
-        child: const _DownloadBulkActionMenuLabel(
+        child: _DownloadBulkActionMenuLabel(
           icon: Icons.play_circle_outline,
-          label: '继续选中下载',
+          label: AppLocalizations.of(context).resumeSelectedDownloads,
         ),
       ),
       PopupMenuItem(
@@ -288,17 +299,17 @@ class _DownloadsPageState extends State<DownloadsPage> {
           DownloadStatus.downloading,
           DownloadStatus.paused,
         }).isNotEmpty,
-        child: const _DownloadBulkActionMenuLabel(
+        child: _DownloadBulkActionMenuLabel(
           icon: Icons.cancel_outlined,
-          label: '取消选中下载',
+          label: AppLocalizations.of(context).cancelSelectedDownloads,
         ),
       ),
       PopupMenuItem(
         value: _DownloadBulkAction.retry,
         enabled: _selectedTasksWithStatus({DownloadStatus.failed}).isNotEmpty,
-        child: const _DownloadBulkActionMenuLabel(
+        child: _DownloadBulkActionMenuLabel(
           icon: Icons.refresh,
-          label: '重试选中下载',
+          label: AppLocalizations.of(context).retrySelectedDownloads,
         ),
       ),
       PopupMenuItem(
@@ -307,9 +318,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
           DownloadStatus.completed,
           DownloadStatus.failed,
         }, excludeInstalling: true).isNotEmpty,
-        child: const _DownloadBulkActionMenuLabel(
+        child: _DownloadBulkActionMenuLabel(
           icon: Icons.delete_outline,
-          label: '删除选中下载',
+          label: AppLocalizations.of(context).deleteSelectedDownloads,
         ),
       ),
     ],
@@ -397,9 +408,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
         );
     final end = _rangeEnd ?? anchor;
     if (anchor < 0 || end < 0) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('请先选择区间起点和终点')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).selectRangeHint)),
+      );
       return;
     }
     final start = anchor < end ? anchor : end;
@@ -429,9 +440,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
     });
     if (tasks.isEmpty) return;
     final confirmed = await _confirmBulkAction(
-      title: '取消选中的下载？',
-      content: '将取消并移除 ${tasks.length} 个进行中的下载任务。',
-      confirmLabel: '取消下载',
+      title: AppLocalizations.of(context).cancelSelectedTitle,
+      content: AppLocalizations.of(
+        context,
+      ).cancelSelectedMessage((tasks.length).toString()),
+      confirmLabel: AppLocalizations.of(context).cancelDownload,
     );
     if (confirmed != true || !mounted) return;
     await _applyToTasks(tasks, state.cancelDownload);
@@ -451,9 +464,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
     }, excludeInstalling: true);
     if (tasks.isEmpty) return;
     final confirmed = await _confirmBulkAction(
-      title: '删除选中的下载？',
-      content: '将删除 ${tasks.length} 个下载文件及其记录。',
-      confirmLabel: '删除',
+      title: AppLocalizations.of(context).deleteSelectedTitle,
+      content: AppLocalizations.of(
+        context,
+      ).deleteSelectedMessage((tasks.length).toString()),
+      confirmLabel: AppLocalizations.of(context).delete,
     );
     if (confirmed != true || !mounted) return;
     await _applyToTasks(tasks, state.deleteDownload);
@@ -480,7 +495,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('取消'),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
@@ -533,20 +548,28 @@ Future<void> confirmClearDownloads(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(completedOnly ? '清除已下载文件？' : '清除全部下载？'),
+      title: Text(
+        completedOnly
+            ? AppLocalizations.of(context).clearCompletedTitle
+            : AppLocalizations.of(context).clearAllDownloadsTitle,
+      ),
       content: Text(
         completedOnly
-            ? '将删除 $count 个已下载文件及其记录。'
-            : '将删除 $count 个下载文件及其记录，进行中的任务也会取消。',
+            ? AppLocalizations.of(
+                context,
+              ).clearCompletedMessage((count).toString())
+            : AppLocalizations.of(
+                context,
+              ).clearAllDownloadsMessage((count).toString()),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('取消'),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('清除'),
+          child: Text(AppLocalizations.of(context).clear),
         ),
       ],
     ),
@@ -569,16 +592,20 @@ Future<void> confirmDeleteDownload(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('删除下载？'),
-      content: Text('将删除“${task.file.label}”及其下载记录。'),
+      title: Text(AppLocalizations.of(context).deleteDownloadTitle),
+      content: Text(
+        AppLocalizations.of(
+          context,
+        ).deleteDownloadMessage((task.file.label).toString()),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('取消'),
+          child: Text(AppLocalizations.of(context).cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('删除'),
+          child: Text(AppLocalizations.of(context).delete),
         ),
       ],
     ),
@@ -620,7 +647,7 @@ class DownloadTaskTile extends StatelessWidget {
       DownloadStatus.failed => (Icons.error_outline, scheme.error),
       DownloadStatus.canceled => (Icons.cancel_outlined, scheme.outline),
     };
-    final detail = downloadTaskDetail(task);
+    final detail = downloadTaskDetail(task, AppLocalizations.of(context));
     final app = task.app;
     final appName = app?.name.trim() ?? '';
     final appDescription = app?.description.trim() ?? '';
@@ -788,7 +815,11 @@ class _DownloadTaskControlsState extends State<DownloadTaskControls> {
       await widget.state.openInstalledTask(widget.task);
     } catch (error) {
       if (mounted) {
-        showActionErrorSnackBar(context, summary: '打开失败', error: error);
+        showActionErrorSnackBar(
+          context,
+          summary: AppLocalizations.of(context).openFailed,
+          error: error,
+        );
       }
     }
   }
@@ -807,7 +838,7 @@ class _DownloadTaskControlsState extends State<DownloadTaskControls> {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            tooltip: '删除下载',
+            tooltip: AppLocalizations.of(context).deleteDownload,
             color: Theme.of(context).colorScheme.error,
             visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
             onPressed: () => confirmDeleteDownload(context, state, task),
@@ -816,7 +847,7 @@ class _DownloadTaskControlsState extends State<DownloadTaskControls> {
           if (app != null && onOpenDetails != null) ...[
             const SizedBox(width: 4),
             IconButton(
-              tooltip: '打开详情',
+              tooltip: AppLocalizations.of(context).openDetails,
               visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
               onPressed: () => onOpenDetails(context, app),
               icon: const Icon(Icons.article_outlined),
@@ -848,7 +879,9 @@ class _DownloadTaskControlsState extends State<DownloadTaskControls> {
             ),
             const SizedBox(width: 8),
             IconButton(
-              tooltip: paused ? '继续下载' : '暂停下载',
+              tooltip: paused
+                  ? AppLocalizations.of(context).resumeDownload
+                  : AppLocalizations.of(context).pauseDownload,
               visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
               onPressed: () => paused
                   ? state.resumeDownload(task)
@@ -856,7 +889,7 @@ class _DownloadTaskControlsState extends State<DownloadTaskControls> {
               icon: Icon(paused ? Icons.play_arrow : Icons.pause),
             ),
             IconButton(
-              tooltip: '取消下载',
+              tooltip: AppLocalizations.of(context).cancelDownload,
               visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
               onPressed: () => state.cancelDownload(task),
               icon: const Icon(Icons.close),
@@ -892,7 +925,7 @@ class _DownloadTaskControlsState extends State<DownloadTaskControls> {
                 padding: const EdgeInsets.symmetric(horizontal: 10),
               ),
               icon: const Icon(Icons.open_in_new),
-              label: const Text('打开'),
+              label: Text(AppLocalizations.of(context).open),
               onPressed: _openInstalled,
             ),
           );
@@ -906,7 +939,7 @@ class _DownloadTaskControlsState extends State<DownloadTaskControls> {
               padding: const EdgeInsets.symmetric(horizontal: 10),
             ),
             icon: const Icon(Icons.install_mobile_outlined),
-            label: const Text('安装'),
+            label: Text(AppLocalizations.of(context).install),
             onPressed: () => installDownloadTask(context, state, task),
           ),
         );
@@ -917,13 +950,13 @@ class _DownloadTaskControlsState extends State<DownloadTaskControls> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                tooltip: '删除下载',
+                tooltip: AppLocalizations.of(context).deleteDownload,
                 color: Theme.of(context).colorScheme.error,
                 onPressed: () => confirmDeleteDownload(context, state, task),
                 icon: const Icon(Icons.delete_outline),
               ),
               IconButton(
-                tooltip: '重试下载',
+                tooltip: AppLocalizations.of(context).retryDownload,
                 onPressed: () => state.retryDownload(task),
                 icon: const Icon(Icons.refresh),
               ),
@@ -936,36 +969,42 @@ class _DownloadTaskControlsState extends State<DownloadTaskControls> {
   }
 }
 
-String? downloadTaskDetail(DownloadTask task) {
+String? downloadTaskDetail(DownloadTask task, AppLocalizations strings) {
   switch (task.status) {
     case DownloadStatus.downloading:
       final total = task.total;
       final progress = total != null && total > 0
           ? '${formatByteCount(task.received)} / ${formatByteCount(total)} · ${((task.progress ?? 0) * 100).toStringAsFixed(0)}%'
           : task.received > 0
-          ? '已下载 ${formatByteCount(task.received)}'
-          : '正在连接';
+          ? strings.downloadedBytes((formatByteCount(task.received)).toString())
+          : strings.connecting;
       final stats = <String>[];
       final speed = task.speedBytesPerSecond;
       if (speed != null && speed > 0) {
-        stats.add('速度 ${formatByteCount(speed)}/s');
+        stats.add(strings.downloadSpeed((formatByteCount(speed)).toString()));
       }
       final remaining = task.estimatedRemaining;
       if (remaining != null) {
-        stats.add('预计 ${formatDownloadDuration(remaining)}');
+        stats.add(
+          strings.remainingTime(
+            (formatDownloadDuration(remaining, strings)).toString(),
+          ),
+        );
       }
       return [progress, ...stats].join(' · ');
     case DownloadStatus.paused:
       final progress = task.received > 0
-          ? '已下载 ${formatByteCount(task.received)}'
-          : '尚未开始传输';
-      return '已暂停 · $progress';
+          ? strings.downloadedBytes((formatByteCount(task.received)).toString())
+          : strings.transferNotStarted;
+      return strings.pausedProgress((progress).toString());
     case DownloadStatus.completed:
       return null;
     case DownloadStatus.failed:
-      return '下载失败\n${task.error ?? '未知错误'}';
+      return strings.downloadFailedDetail(
+        (task.error ?? strings.unknownError).toString(),
+      );
     case DownloadStatus.canceled:
-      return '已取消';
+      return strings.canceled;
   }
 }
 
@@ -982,18 +1021,22 @@ String formatByteCount(int bytes) {
   return '${value.toStringAsFixed(digits)} ${units[unit]}';
 }
 
-String formatDownloadDuration(Duration duration) {
+String formatDownloadDuration(Duration duration, AppLocalizations strings) {
   final totalSeconds = duration.inSeconds < 1 ? 1 : duration.inSeconds;
   final hours = totalSeconds ~/ 3600;
   final minutes = totalSeconds % 3600 ~/ 60;
   final seconds = totalSeconds % 60;
   if (hours > 0) {
-    return minutes > 0 ? '$hours 小时 $minutes 分钟' : '$hours 小时';
+    return minutes > 0
+        ? strings.hoursMinutes((hours).toString(), (minutes).toString())
+        : strings.hours((hours).toString());
   }
   if (minutes > 0) {
-    return seconds > 0 ? '$minutes 分钟 $seconds 秒' : '$minutes 分钟';
+    return seconds > 0
+        ? strings.minutesSeconds((minutes).toString(), (seconds).toString())
+        : strings.minutes((minutes).toString());
   }
-  return '$seconds 秒';
+  return strings.seconds((seconds).toString());
 }
 
 Future<void> installDownloadTask(
@@ -1010,15 +1053,19 @@ Future<void> installDownloadTask(
         content: Text(
           installed
               ? useShizuku
-                    ? '已通过 Shizuku 安装'
-                    : '已交给系统安装器'
-              : '安装未完成，请检查安装权限后重试',
+                    ? AppLocalizations.of(context).installedWithShizuku
+                    : AppLocalizations.of(context).sentToInstaller
+              : AppLocalizations.of(context).installationIncomplete,
         ),
       ),
     );
   } catch (error) {
     if (!context.mounted) return;
-    showActionErrorSnackBar(context, summary: '安装失败', error: error);
+    showActionErrorSnackBar(
+      context,
+      summary: AppLocalizations.of(context).installationFailed,
+      error: error,
+    );
   }
 }
 
@@ -1034,18 +1081,22 @@ void showActionErrorSnackBar(
       SnackBar(
         content: Text(summary),
         action: SnackBarAction(
-          label: '详情',
+          label: AppLocalizations.of(context).details,
           onPressed: () {
             if (!context.mounted) return;
             showDialog<void>(
               context: context,
               builder: (dialogContext) => AlertDialog(
-                title: Text('$summary详情'),
+                title: Text(
+                  AppLocalizations.of(
+                    context,
+                  ).errorDetails((summary).toString()),
+                ),
                 content: SingleChildScrollView(child: SelectableText(detail)),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('关闭'),
+                    child: Text(AppLocalizations.of(context).close),
                   ),
                 ],
               ),

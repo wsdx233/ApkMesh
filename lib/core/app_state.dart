@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../l10n/app_localizations.dart';
+import 'app_language.dart';
 import 'debug_log.dart';
 import 'download_notifications.dart';
 import 'download_store.dart';
@@ -18,7 +20,7 @@ import 'source_runtime.dart';
 import 'translation_service.dart';
 
 String _newTranslationDeviceId() =>
-    'apkmesh-${DateTime.now().microsecondsSinceEpoch}-${math.Random().nextInt(1 << 32)}';
+    'apkmesh-${DateTime.now().microsecondsSinceEpoch}-${math.Random().nextInt(0x100000000)}';
 
 class AppState extends ChangeNotifier {
   AppState({SourceHostApi? host}) : _hostOverride = host {
@@ -28,7 +30,7 @@ class AppState extends ChangeNotifier {
         name: 'APKVision',
         homepage: 'apkvision.org',
         version: '1.0.0',
-        description: '内置演示源，用于验证 APKVision 搜索、详情和下载接口。',
+        description: strings.demoSourceDescription,
         status: SourceStatus.enabled,
         builtIn: true,
         homeSource: true,
@@ -54,7 +56,9 @@ class AppState extends ChangeNotifier {
   late final DownloadNotifications _downloadNotifications;
   final Completer<void> _ready = Completer<void>();
   final DownloadStore _downloadStore = createDownloadStore();
-  final TranslationService translation = TranslationService();
+  late final TranslationService translation = TranslationService(
+    localizations: () => strings,
+  );
   final List<DownloadTask> _downloads = [];
   final List<AppListing> _favorites = [];
   final List<AppListing> _history = [];
@@ -74,6 +78,10 @@ class AppState extends ChangeNotifier {
   List<String> _searchTabSourceIds = const [];
   String? _preferredHomeSourceId;
   AppThemeMode _themeMode = AppThemeMode.system;
+  AppLanguage _appLanguage = AppLanguage.system;
+  AppLocalizations _strings = lookupAppLocalizations(
+    resolveAppLocale(PlatformDispatcher.instance.locale),
+  );
   InstallMethod _installMethod = InstallMethod.system;
   ShizukuStatus _shizukuStatus = ShizukuStatus.unsupported;
   String _translationDeviceId = _newTranslationDeviceId();
@@ -220,6 +228,32 @@ class AppState extends ChangeNotifier {
   bool get supportsExternalDownloader =>
       external_download.supportsExternalDownloader;
   AppThemeMode get themeMode => _themeMode;
+  AppLanguage get appLanguage => _appLanguage;
+  AppLocalizations get strings => _strings;
+
+  Future<void> setAppLanguage(AppLanguage language) async {
+    await _settingsReady;
+    if (_isDisposing || _appLanguage == language) return;
+    _appLanguage = language;
+    _refreshAppLocale();
+    notifyListeners();
+    await _persistSettings();
+  }
+
+  void updateSystemLocale() {
+    if (_isDisposing || _appLanguage != AppLanguage.system) return;
+    _refreshAppLocale();
+    notifyListeners();
+  }
+
+  void _refreshAppLocale() {
+    final locale = resolveAppLocale(
+      _appLanguage.locale ?? PlatformDispatcher.instance.locale,
+    );
+    _strings = lookupAppLocalizations(locale);
+    unawaited(syncNativeAppLocale(locale));
+  }
+
   InstallMethod get installMethod => _installMethod;
   bool get useShizukuInstaller => _installMethod == InstallMethod.shizuku;
   ShizukuStatus get shizukuStatus => _shizukuStatus;
@@ -238,7 +272,7 @@ class AppState extends ChangeNotifier {
     final value = text.trim();
     if (value.isEmpty) return '';
     await _settingsReady;
-    if (_isDisposing) throw StateError('翻译服务已关闭');
+    if (_isDisposing) throw StateError(strings.translationClosed);
     final settings = _translationSettings.copyWith(targetLanguage: 'en');
     final results = await translation.translate(
       [value],
@@ -246,7 +280,7 @@ class AppState extends ChangeNotifier {
       deviceId: _translationDeviceId,
     );
     if (results.isEmpty || results.first.trim().isEmpty) {
-      throw const FormatException('翻译接口没有返回结果');
+      throw FormatException(strings.translationEmpty);
     }
     return results.first.trim();
   }
@@ -310,7 +344,10 @@ class AppState extends ChangeNotifier {
     } catch (error) {
       if (!_isDisposing) {
         debug.add(
-          '${settings.provider.label} 翻译失败：$error',
+          strings.providerTranslationFailed(
+            (settings.provider.label(strings)).toString(),
+            (error).toString(),
+          ),
           level: DebugLogLevel.warning,
           category: 'Translation',
         );
@@ -397,7 +434,7 @@ class AppState extends ChangeNotifier {
     } catch (error) {
       if (!_isDisposing) {
         debug.add(
-          '读取 Shizuku 状态失败：$error',
+          strings.shizukuStatusFailed((error).toString()),
           level: DebugLogLevel.warning,
           category: 'Install',
         );
@@ -418,7 +455,10 @@ class AppState extends ChangeNotifier {
     } catch (error) {
       if (!_isDisposing) {
         debug.add(
-          '读取安装状态失败：${task.file.label} · $error',
+          strings.installStatusFailed(
+            (task.file.label).toString(),
+            (error).toString(),
+          ),
           level: DebugLogLevel.warning,
           category: 'Install',
         );
@@ -448,10 +488,10 @@ class AppState extends ChangeNotifier {
     }
     final packageName = info?.packageName;
     if (info == null || !info.versionMatches || packageName == null) {
-      throw StateError(info?.error ?? '当前 APK 版本尚未安装或无法打开');
+      throw StateError(info?.error ?? strings.appNotInstalled);
     }
     if (!await host.openInstalled(packageName)) {
-      throw StateError('无法打开已安装的应用');
+      throw StateError(strings.installedAppOpenFailed);
     }
   }
 
@@ -486,6 +526,10 @@ class AppState extends ChangeNotifier {
       final preferences = await SharedPreferences.getInstance();
       if (_isDisposing) return;
       _preferences = preferences;
+      _appLanguage = AppLanguage.fromPreference(
+        preferences.getString('app.language'),
+      );
+      _refreshAppLocale();
       _favorites
         ..clear()
         ..addAll(_decodeAppList(preferences.getStringList(_favoritesKey)));
@@ -544,7 +588,7 @@ class AppState extends ChangeNotifier {
         _shizukuStatus = await host.shizukuStatus();
       } catch (error) {
         debug.add(
-          '读取 Shizuku 状态失败：$error',
+          strings.shizukuStatusFailed((error).toString()),
           level: DebugLogLevel.warning,
           category: 'Install',
         );
@@ -554,7 +598,7 @@ class AppState extends ChangeNotifier {
       _translationDeviceId = _newTranslationDeviceId();
       if (!_isDisposing) {
         debug.add(
-          '读取翻译设置失败：$error',
+          strings.settingsRestoreFailed((error).toString()),
           level: DebugLogLevel.warning,
           category: 'Translation',
         );
@@ -586,6 +630,7 @@ class AppState extends ChangeNotifier {
       'translation.googleKey',
       _translationSettings.googlePublicKey,
     );
+    await preferences.setString('app.language', _appLanguage.preference);
     await preferences.setInt('theme.mode', _themeMode.index);
     await preferences.setString('download.method', _downloadMethod.name);
     await preferences.setString('install.method', _installMethod.name);
@@ -687,7 +732,7 @@ class AppState extends ChangeNotifier {
       name: script.name,
       homepage: manifest?.homepage ?? '',
       version: manifest?.version ?? '0.0.0',
-      description: manifest?.description ?? '内置 QuickJS 源',
+      description: manifest?.description ?? strings.builtInQuickJsSource,
       status: _disabledSourceIds.contains(script.id)
           ? SourceStatus.disabled
           : SourceStatus.enabled,
@@ -738,10 +783,13 @@ class AppState extends ChangeNotifier {
         }
       }
       if (_downloads.isNotEmpty) notifyListeners();
-      debug.add('恢复 ${_downloads.length} 条下载任务', category: 'Download');
+      debug.add(
+        strings.downloadsRestored((_downloads.length).toString()),
+        category: 'Download',
+      );
     } catch (error) {
       debug.add(
-        '读取下载任务失败：$error',
+        strings.downloadsRestoreFailed((error).toString()),
         level: DebugLogLevel.error,
         category: 'Download',
       );
@@ -771,7 +819,7 @@ class AppState extends ChangeNotifier {
       try {
         await _downloadStore.save(snapshot);
       } catch (error) {
-        debugPrint('[APK Mesh] 保存下载任务失败：$error');
+        debugPrint(strings.downloadsSaveFailed((error).toString()));
       }
     });
   }
@@ -789,7 +837,7 @@ class AppState extends ChangeNotifier {
         _replaceDownload(
           task.copyWith(
             status: DownloadStatus.failed,
-            error: '下载源未恢复，请重新导入源后重试',
+            error: strings.downloadSourceMissing,
             completedAt: DateTime.now(),
           ),
         );
@@ -811,11 +859,14 @@ class AppState extends ChangeNotifier {
     unawaited(_settingsReady);
     await _restoreDownloads();
     unawaited(refreshInstallStates());
-    debug.add('正在扫描内置 QuickJS 源', category: 'App');
+    debug.add(strings.scanningSources, category: 'App');
     var loadedCount = 0;
     try {
       final assetPaths = await discoverSourceAssets();
-      debug.add('发现 ${assetPaths.length} 个内置源脚本', category: 'App');
+      debug.add(
+        strings.bundledSourcesFound((assetPaths.length).toString()),
+        category: 'App',
+      );
       for (final assetPath in assetPaths) {
         try {
           final quickJsSource = await loadQuickJsSource(
@@ -826,12 +877,18 @@ class AppState extends ChangeNotifier {
             registry.replace(quickJsSource);
             _registerBuiltInScript(quickJsSource);
             loadedCount += 1;
-            debug.add('已加载源：$assetPath', category: 'App');
+            debug.add(
+              strings.sourceLoaded((assetPath).toString()),
+              category: 'App',
+            );
           }
         } catch (error) {
           _runtimeError = error.toString();
           debug.add(
-            'QuickJS 源加载失败（$assetPath）: $error',
+            strings.sourceLoadFailed(
+              (assetPath).toString(),
+              (error).toString(),
+            ),
             level: DebugLogLevel.error,
             category: 'App',
           );
@@ -861,7 +918,7 @@ class AppState extends ChangeNotifier {
     for (final entry in entries) {
       try {
         if (entry.error != null || entry.text == null) {
-          throw entry.error ?? const FormatException('无法读取 JS 源脚本');
+          throw entry.error ?? FormatException(strings.sourceReadFailed);
         }
         final script = await loadQuickJsSourceText(
           entry.text!,
@@ -869,10 +926,10 @@ class AppState extends ChangeNotifier {
           debug: debug,
         );
         if (script == null) {
-          throw UnsupportedError('当前平台不支持 QuickJS 源导入');
+          throw UnsupportedError(strings.sourceImportUnsupported);
         }
         if (script.id == 'quickjs-source') {
-          throw const FormatException('源 manifest 缺少有效 ID');
+          throw FormatException(strings.sourceMissingId);
         }
         loaded.add((name: entry.name, script: script));
       } catch (error) {
@@ -886,7 +943,9 @@ class AppState extends ChangeNotifier {
           !acceptedIds.add(item.script.id) ||
           _sources.any((source) => source.id == item.script.id);
       if (duplicate) {
-        failures[item.name] = '源 ID 已存在：${item.script.id}';
+        failures[item.name] = strings.sourceIdExists(
+          (item.script.id).toString(),
+        );
         await item.script.dispose();
         continue;
       }
@@ -900,7 +959,10 @@ class AppState extends ChangeNotifier {
       _refreshSourceView();
       notifyListeners();
       debug.add(
-        '已导入 ${imported.length} 个源，失败 ${failures.length} 个',
+        strings.sourcesImportedWithErrors(
+          (imported.length).toString(),
+          (failures.length).toString(),
+        ),
         category: 'App',
       );
     }
@@ -910,7 +972,7 @@ class AppState extends ChangeNotifier {
   Future<SourceImportResult> importSourceUrl(String rawUrl) async {
     final uri = Uri.tryParse(rawUrl.trim());
     if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
-      throw const FormatException('源 URL 必须是 HTTPS 地址');
+      throw FormatException(strings.sourceHttpsRequired);
     }
     final bytes = await host.requestBytes(
       uri.toString(),
@@ -949,10 +1011,15 @@ class AppState extends ChangeNotifier {
           sourceId: source.id,
           sourceName: source.name,
           resultCount: page?.results.length ?? 0,
-          error: page?.error ?? (page == null ? '源运行时未加载' : null),
+          error:
+              page?.error ??
+              (page == null ? strings.sourceRuntimeMissing : null),
         );
 
-    debug.add('开始批量测试源：搜索“$normalized”', category: 'Source');
+    debug.add(
+      strings.batchTestStarted((normalized).toString()),
+      category: 'Source',
+    );
     final pages = await registry.searchPage(
       normalized,
       host,
@@ -973,7 +1040,10 @@ class AppState extends ChangeNotifier {
     }
     final failed = results.where((result) => !result.succeeded).length;
     debug.add(
-      '批量测试完成：可用 ${results.length - failed} 个，失败 $failed 个',
+      strings.batchTestFinished(
+        (results.length - failed).toString(),
+        (failed).toString(),
+      ),
       category: 'Source',
     );
     return results;
@@ -985,7 +1055,10 @@ class AppState extends ChangeNotifier {
     void Function(List<AppListing> results)? onSourceResults,
   }) async {
     await ready;
-    debug.add('开始聚合搜索：${query.trim()}', category: 'App');
+    debug.add(
+      strings.searchStarted((query.trim()).toString()),
+      category: 'App',
+    );
     final enabledSourceIds = _sources
         .where(
           (source) =>
@@ -1004,12 +1077,18 @@ class AppState extends ChangeNotifier {
     );
     for (final entry in sourceErrors.entries) {
       debug.add(
-        '${entry.key} 执行失败：${entry.value}',
+        strings.sourceExecutionFailed(
+          (entry.key).toString(),
+          (entry.value).toString(),
+        ),
         level: DebugLogLevel.error,
         category: 'Source',
       );
     }
-    debug.add('聚合搜索完成，结果 ${results.length} 条', category: 'App');
+    debug.add(
+      strings.searchFinished((results.length).toString()),
+      category: 'App',
+    );
     return results;
   }
 
@@ -1017,7 +1096,10 @@ class AppState extends ChangeNotifier {
     await ready;
     final normalized = packageName.trim();
     if (normalized.isEmpty) return const [];
-    debug.add('开始按包名查找：$normalized', category: 'App');
+    debug.add(
+      strings.packageLookupStarted((normalized).toString()),
+      category: 'App',
+    );
     final enabledSourceIds = _sources
         .where((source) => source.status == SourceStatus.enabled)
         .map((source) => source.id)
@@ -1029,12 +1111,18 @@ class AppState extends ChangeNotifier {
     );
     for (final entry in sourceErrors.entries) {
       debug.add(
-        '${entry.key} 执行失败：${entry.value}',
+        strings.sourceExecutionFailed(
+          (entry.key).toString(),
+          (entry.value).toString(),
+        ),
         level: DebugLogLevel.error,
         category: 'Source',
       );
     }
-    debug.add('按包名查找完成，结果 ${results.length} 条', category: 'App');
+    debug.add(
+      strings.packageLookupFinished((results.length).toString()),
+      category: 'App',
+    );
     return results;
   }
 
@@ -1047,7 +1135,12 @@ class AppState extends ChangeNotifier {
   }) async {
     await ready;
     debug.add(
-      page == 1 ? '开始聚合搜索：${query.trim()}' : '开始加载搜索第 $page 页：${query.trim()}',
+      page == 1
+          ? strings.searchStarted((query.trim()).toString())
+          : strings.searchPageStarted(
+              (page).toString(),
+              (query.trim()).toString(),
+            ),
       category: 'App',
     );
     final enabledSourceIds = _sources
@@ -1069,13 +1162,22 @@ class AppState extends ChangeNotifier {
     );
     for (final entry in sourceErrors.entries) {
       debug.add(
-        '${entry.key} 执行失败：${entry.value}',
+        strings.sourceExecutionFailed(
+          (entry.key).toString(),
+          (entry.value).toString(),
+        ),
         level: DebugLogLevel.error,
         category: 'Source',
       );
     }
     debug.add(
-      '搜索第 $page 页完成，结果 ${pages.fold<int>(0, (total, item) => total + item.results.length)} 条',
+      strings.searchPageFinished(
+        (page).toString(),
+        (pages.fold<int>(
+          0,
+          (total, item) => total + item.results.length,
+        )).toString(),
+      ),
       category: 'App',
     );
     return pages;
@@ -1133,7 +1235,7 @@ class AppState extends ChangeNotifier {
       await loadDetails(app, onProgress: (value) => progress = value);
       final loaded = progress;
       if (loaded == null) {
-        throw StateError('没有返回应用详情');
+        throw StateError(strings.noAppDetails);
       }
 
       final filesByUrl = <String, SourceDownload>{};
@@ -1142,7 +1244,9 @@ class AppState extends ChangeNotifier {
         if (download.error != null) {
           errors.add('${download.candidate.label}：${download.error}');
         } else if (download.files != null && download.files!.isEmpty) {
-          errors.add('${download.candidate.label}：未找到可用下载链接');
+          errors.add(
+            strings.candidateNoLinks((download.candidate.label).toString()),
+          );
         }
         for (final file in download.files ?? const <SourceDownload>[]) {
           if (file.url.trim().isNotEmpty) filesByUrl[file.url] = file;
@@ -1156,7 +1260,9 @@ class AppState extends ChangeNotifier {
       }
       if (filesByUrl.isEmpty) {
         throw StateError(
-          errors.isEmpty ? (loaded.error ?? '未找到可用下载链接') : errors.join('；'),
+          errors.isEmpty
+              ? (loaded.error ?? strings.noDownloadLinks)
+              : errors.join('；'),
         );
       }
 
@@ -1229,7 +1335,7 @@ class AppState extends ChangeNotifier {
   }) async {
     await ready;
     if (tab.sourceId != homeSourceId) {
-      throw StateError('该目录标签不属于当前主页源');
+      throw StateError(strings.wrongHomeSource);
     }
     return registry.catalogPage(tab, host, page: page);
   }
@@ -1243,9 +1349,14 @@ class AppState extends ChangeNotifier {
           source.id == project.sourceId &&
           source.status == SourceStatus.enabled,
     );
-    if (!enabled) throw StateError('源未启用：${project.sourceName}');
+    if (!enabled) {
+      throw StateError(strings.sourceDisabled((project.sourceName).toString()));
+    }
     debug.add(
-      '开始调试项目：${project.name} · ${project.sourceName}',
+      strings.debugProjectStarted(
+        (project.name).toString(),
+        (project.sourceName).toString(),
+      ),
       category: 'Debug',
     );
     try {
@@ -1254,7 +1365,10 @@ class AppState extends ChangeNotifier {
       return result;
     } catch (error) {
       debug.add(
-        '调试项目失败：${project.name} · $error',
+        strings.debugProjectError(
+          (project.name).toString(),
+          (error).toString(),
+        ),
         level: DebugLogLevel.error,
         category: 'Debug',
       );
@@ -1282,7 +1396,10 @@ class AppState extends ChangeNotifier {
       await installTask(task);
     } catch (error) {
       debug.add(
-        '通知安装失败：${task.file.label} · $error',
+        strings.notificationInstallFailed(
+          (task.file.label).toString(),
+          (error).toString(),
+        ),
         level: DebugLogLevel.error,
         category: 'Download',
       );
@@ -1308,7 +1425,7 @@ class AppState extends ChangeNotifier {
     } catch (_) {
       final snapshot = task.policy;
       if (snapshot == null) {
-        throw StateError('下载源未恢复，请重新导入源后重试');
+        throw StateError(strings.downloadSourceMissing);
       }
       return SourcePolicy(
         allowedHosts: snapshot.allowedHosts.toSet(),
@@ -1324,10 +1441,12 @@ class AppState extends ChangeNotifier {
     AppListing? app,
   }) async {
     await _settingsReady;
-    if (_isDisposing) throw StateError('应用状态已关闭');
+    if (_isDisposing) throw StateError(strings.appStateClosed);
     final method = _downloadMethod;
     final policy = registry.scriptFor(sourceId).policy;
-    if (!policy.allowDownload) throw StateError('该源没有声明下载权限');
+    if (!policy.allowDownload) {
+      throw StateError(strings.downloadPermissionMissing);
+    }
     if (method == DownloadMethod.internal) {
       startDownload(file, sourceId, app: app);
       return method;
@@ -1335,7 +1454,7 @@ class AppState extends ChangeNotifier {
 
     final uri = Uri.tryParse(file.url);
     if (uri == null || !policy.permits(uri)) {
-      throw StateError('源权限拒绝访问下载地址');
+      throw StateError(strings.downloadUrlDenied);
     }
 
     final launched = switch (method) {
@@ -1353,11 +1472,19 @@ class AppState extends ChangeNotifier {
     };
     if (!launched) {
       throw StateError(
-        method == DownloadMethod.browser ? '系统没有可用的浏览器' : '没有可用的外部下载器',
+        method == DownloadMethod.browser
+            ? strings.noBrowser
+            : strings.noExternalDownloader,
       );
     }
     debug.add(
-      '${method == DownloadMethod.browser ? '浏览器' : '外部下载器'}已接收：${file.label}',
+      strings.externalDownloadReceived(
+        (method == DownloadMethod.browser
+                ? strings.browser
+                : strings.externalDownloader)
+            .toString(),
+        (file.label).toString(),
+      ),
       category: 'Download',
     );
     return method;
@@ -1418,7 +1545,10 @@ class AppState extends ChangeNotifier {
     _installInfos.remove(task.id);
     _installStateChecks.remove(task.id);
     _scheduleDownloadPersistence();
-    debug.add('开始下载：${file.label}', category: 'Download');
+    debug.add(
+      strings.downloadStarting((file.label).toString()),
+      category: 'Download',
+    );
     notifyListeners();
     unawaited(_runDownload(task.id));
     return task;
@@ -1442,7 +1572,10 @@ class AppState extends ChangeNotifier {
         speedBytesPerSecond: null,
       ),
     );
-    debug.add('暂停下载：${current.file.label}', category: 'Download');
+    debug.add(
+      strings.downloadPausing((current.file.label).toString()),
+      category: 'Download',
+    );
     try {
       await host.pauseDownload(current.id);
       final paused = _downloadById(current.id);
@@ -1473,7 +1606,10 @@ class AppState extends ChangeNotifier {
         );
       }
       debug.add(
-        '暂停下载失败：${current.file.label} · $error',
+        strings.downloadPauseFailed(
+          (current.file.label).toString(),
+          (error).toString(),
+        ),
         level: DebugLogLevel.error,
         category: 'Download',
       );
@@ -1490,7 +1626,10 @@ class AppState extends ChangeNotifier {
         speedBytesPerSecond: null,
       ),
     );
-    debug.add('继续下载：${current.file.label}', category: 'Download');
+    debug.add(
+      strings.downloadResuming((current.file.label).toString()),
+      category: 'Download',
+    );
     if (!host.hasDownloadSession(current.id)) {
       unawaited(_runDownload(current.id));
       return;
@@ -1522,7 +1661,10 @@ class AppState extends ChangeNotifier {
         );
       }
       debug.add(
-        '继续下载失败：${current.file.label} · $error',
+        strings.downloadResumeFailed(
+          (current.file.label).toString(),
+          (error).toString(),
+        ),
         level: DebugLogLevel.error,
         category: 'Download',
       );
@@ -1537,13 +1679,19 @@ class AppState extends ChangeNotifier {
       return;
     }
     _removeDownload(current.id);
-    debug.add('取消下载：${current.file.label}', category: 'Download');
+    debug.add(
+      strings.downloadCanceling((current.file.label).toString()),
+      category: 'Download',
+    );
     await _downloadNotifications.cancel(current.id);
     try {
       await host.cancelDownload(current.id);
     } catch (error) {
       debug.add(
-        '取消下载清理失败：${current.file.label} · $error',
+        strings.downloadCancelCleanupFailed(
+          (current.file.label).toString(),
+          (error).toString(),
+        ),
         level: DebugLogLevel.warning,
         category: 'Download',
       );
@@ -1564,13 +1712,19 @@ class AppState extends ChangeNotifier {
       await host.removeDownloadFiles(current.id, filePath: current.filePath);
     } catch (error) {
       debug.add(
-        '删除下载文件失败：${current.file.label} · $error',
+        strings.downloadDeleteFailed(
+          (current.file.label).toString(),
+          (error).toString(),
+        ),
         level: DebugLogLevel.warning,
         category: 'Download',
       );
     }
     _removeDownload(current.id);
-    debug.add('删除下载：${current.file.label}', category: 'Download');
+    debug.add(
+      strings.downloadDeleting((current.file.label).toString()),
+      category: 'Download',
+    );
   }
 
   Future<void> clearDownloads({required bool completedOnly}) async {
@@ -1591,7 +1745,10 @@ class AppState extends ChangeNotifier {
         await host.cancelDownload(task.id);
       } catch (error) {
         debug.add(
-          '清理下载会话失败：${task.file.label} · $error',
+          strings.downloadSessionCleanupFailed(
+            (task.file.label).toString(),
+            (error).toString(),
+          ),
           level: DebugLogLevel.warning,
           category: 'Download',
         );
@@ -1603,7 +1760,10 @@ class AppState extends ChangeNotifier {
         await host.removeDownloadFiles(task.id, filePath: task.filePath);
       } catch (error) {
         debug.add(
-          '删除下载文件失败：${task.file.label} · $error',
+          strings.downloadDeleteFailed(
+            (task.file.label).toString(),
+            (error).toString(),
+          ),
           level: DebugLogLevel.warning,
           category: 'Download',
         );
@@ -1670,7 +1830,10 @@ class AppState extends ChangeNotifier {
         completedAt: DateTime.now(),
       );
       _replaceDownload(completed);
-      debug.add('下载完成：${task.file.label}', category: 'Download');
+      debug.add(
+        strings.downloadCompleted((task.file.label).toString()),
+        category: 'Download',
+      );
       await _downloadNotifications.showCompleted(
         id: task.id,
         title: task.file.label,
@@ -1682,7 +1845,10 @@ class AppState extends ChangeNotifier {
       if (current == null) return;
       if (error is DownloadCancelledException) {
         _removeDownload(current.id);
-        debug.add('已取消下载：${task.file.label}', category: 'Download');
+        debug.add(
+          strings.downloadCanceled((task.file.label).toString()),
+          category: 'Download',
+        );
         await _downloadNotifications.cancel(task.id);
         return;
       }
@@ -1696,7 +1862,7 @@ class AppState extends ChangeNotifier {
         ),
       );
       debug.add(
-        '下载失败：${task.file.label} · $error',
+        strings.downloadError((task.file.label).toString(), (error).toString()),
         level: DebugLogLevel.error,
         category: 'Download',
       );
@@ -1798,9 +1964,9 @@ class AppState extends ChangeNotifier {
     await _settingsReady;
     final current = _downloadById(task.id) ?? task;
     final path = current.filePath;
-    if (path == null) throw StateError('下载文件尚未完成');
+    if (path == null) throw StateError(strings.downloadNotComplete);
     if (!_installingDownloads.add(current.id)) {
-      throw StateError('该安装任务正在进行');
+      throw StateError(strings.installationInProgress);
     }
     notifyListeners();
     try {

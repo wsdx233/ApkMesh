@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:apk_mesh/core/translation_service.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   test('translates batches through the Microsoft Edge route', () async {
@@ -115,7 +115,6 @@ void main() {
       'zh-Hans',
     );
     expect(translationLanguageCode('ja', TranslationProvider.google), 'jp');
-    expect(translationLanguageLabel('system'), '跟随系统');
   });
 }
 

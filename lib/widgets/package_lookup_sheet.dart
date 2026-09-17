@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_state.dart';
 import '../core/models.dart';
+import '../l10n/app_localizations.dart';
 import 'app_result_tile.dart';
 
 class PackageLookupSheet extends StatefulWidget {
@@ -49,12 +50,12 @@ class _PackageLookupSheetState extends State<PackageLookupSheet> {
                   children: [
                     Expanded(
                       child: Text(
-                        '按包名查找',
+                        AppLocalizations.of(context).lookupPackageTitle,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
                     IconButton(
-                      tooltip: '关闭',
+                      tooltip: AppLocalizations.of(context).close,
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close),
                     ),
@@ -76,7 +77,7 @@ class _PackageLookupSheetState extends State<PackageLookupSheet> {
                 else if (snapshot.hasError)
                   _LookupMessage(
                     icon: Icons.error_outline,
-                    title: '包名查找失败',
+                    title: AppLocalizations.of(context).packageLookupFailed,
                     detail: snapshot.error.toString(),
                   )
                 else if (results.isEmpty)
@@ -105,8 +106,12 @@ class _PackageLookupSheetState extends State<PackageLookupSheet> {
     );
     return _LookupMessage(
       icon: hasPackageSource ? Icons.search_off : Icons.hub_outlined,
-      title: hasPackageSource ? '未找到对应应用' : '没有可用的包名查找源',
-      detail: hasPackageSource ? '已在启用的包名查找源中搜索该包名。' : '请先启用声明了包名查找能力的源。',
+      title: hasPackageSource
+          ? AppLocalizations.of(context).noMatchingApps
+          : AppLocalizations.of(context).noPackageSources,
+      detail: hasPackageSource
+          ? AppLocalizations.of(context).packageSearchedHint
+          : AppLocalizations.of(context).enablePackageSourceHint,
     );
   }
 }

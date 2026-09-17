@@ -2,6 +2,7 @@ import 'package:apk_mesh/core/app_state.dart';
 import 'package:apk_mesh/core/models.dart';
 import 'package:apk_mesh/core/source_runtime.dart';
 import 'package:apk_mesh/core/translation_service.dart';
+import 'package:apk_mesh/l10n/app_localizations.dart';
 import 'package:apk_mesh/main.dart';
 import 'package:apk_mesh/widgets/app_result_tile.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  final binding = TestWidgetsFlutterBinding.ensureInitialized();
+  setUp(() {
+    binding.platformDispatcher.localesTestValue = const [Locale('zh')];
+  });
+  tearDown(binding.platformDispatcher.clearLocalesTestValue);
   testWidgets('shows the four primary destinations', (tester) async {
     await tester.pumpWidget(const ApkMeshApp());
 
@@ -347,6 +353,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: HomePage(state: state, controller: controller),
         ),
@@ -393,7 +402,14 @@ void main() {
     await state.initialize();
     addTearDown(state.dispose);
 
-    await tester.pumpWidget(MaterialApp(home: Shell(state: state)));
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Shell(state: state),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('跳转页码'), findsNothing);
@@ -440,6 +456,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: AppResultTile(app: app, state: state),
         ),
@@ -481,6 +500,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: AppResultTile(
             app: app,
@@ -528,6 +550,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: DetailsSheet(app: app, state: state),
         ),
@@ -562,6 +587,9 @@ void main() {
     final state = AppState(host: DemoHostApi());
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: SourcesPage(state: state)),
       ),
     );
@@ -582,6 +610,9 @@ void main() {
     final state = AppState(host: DemoHostApi());
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: SourcesPage(state: state)),
       ),
     );
@@ -634,6 +665,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: SourcesPage(state: state)),
       ),
     );

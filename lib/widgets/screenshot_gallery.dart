@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
+import '../l10n/app_localizations.dart';
+
 class ScreenshotGallery extends StatelessWidget {
   const ScreenshotGallery({required this.urls, super.key});
   final List<String> urls;
@@ -161,7 +163,7 @@ class _ScreenshotViewerState extends State<ScreenshotViewer> {
           title: Text('${_currentIndex + 1} / ${widget.urls.length}'),
           actions: [
             IconButton(
-              tooltip: '保存图片',
+              tooltip: AppLocalizations.of(context).saveImage,
               onPressed: _saving ? null : _saveCurrent,
               icon: _saving
                   ? const SizedBox.square(
@@ -174,7 +176,7 @@ class _ScreenshotViewerState extends State<ScreenshotViewer> {
                   : const Icon(Icons.download_outlined),
             ),
             IconButton(
-              tooltip: '关闭',
+              tooltip: AppLocalizations.of(context).close,
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.close),
             ),
@@ -207,11 +209,14 @@ class _ScreenshotViewerState extends State<ScreenshotViewer> {
   }
 
   Future<void> _saveCurrent() async {
+    final strings = AppLocalizations.of(context);
     setState(() => _saving = true);
     try {
       final response = await http.get(Uri.parse(widget.urls[_currentIndex]));
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw StateError('图片请求失败：HTTP ${response.statusCode}');
+        throw StateError(
+          strings.imageRequestFailed(response.statusCode.toString()),
+        );
       }
       await Gal.putImageBytes(
         response.bodyBytes,
@@ -219,19 +224,29 @@ class _ScreenshotViewerState extends State<ScreenshotViewer> {
         name: _imageName(widget.urls[_currentIndex], _currentIndex),
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('图片已保存到系统相册')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).imageSaved)),
+      );
     } on GalException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('保存图片失败：${error.toString()}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).imageSaveFailed((error.toString()).toString()),
+          ),
+        ),
+      );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('保存图片失败：$error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).imageSaveFailed((error).toString()),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }

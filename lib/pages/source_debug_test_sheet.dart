@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../core/app_state.dart';
 import '../core/debug_log.dart';
 import '../core/models.dart';
+import '../l10n/app_localizations.dart';
 
 class SourceDebugTestSheet extends StatefulWidget {
   const SourceDebugTestSheet({
@@ -60,7 +61,9 @@ class _SourceDebugTestSheetState extends State<SourceDebugTestSheet> {
         _status = _SourceDebugTestStatus.idle;
         _result = null;
         _startedAt = null;
-        _error = '请输入${project.inputLabel}';
+        _error = AppLocalizations.of(
+          context,
+        ).enterValue((project.inputLabel).toString());
       });
       return;
     }
@@ -97,26 +100,30 @@ class _SourceDebugTestSheetState extends State<SourceDebugTestSheet> {
       _SourceDebugTestStatus.idle => (
         icon: Icons.play_circle_outline,
         color: null,
-        title: '等待测试',
-        detail: _error ?? '输入${project.inputLabel}后开始测试',
+        title: AppLocalizations.of(context).waitingForTest,
+        detail:
+            _error ??
+            AppLocalizations.of(
+              context,
+            ).testInputHint((project.inputLabel).toString()),
       ),
       _SourceDebugTestStatus.running => (
         icon: Icons.sync,
         color: Theme.of(context).colorScheme.primary,
-        title: '正在测试',
-        detail: '测试进行中，状态会实时更新',
+        title: AppLocalizations.of(context).testing,
+        detail: AppLocalizations.of(context).testLiveHint,
       ),
       _SourceDebugTestStatus.succeeded => (
         icon: Icons.check_circle_outline,
         color: Colors.green,
-        title: '测试成功',
-        detail: _result?.summary ?? '测试已完成',
+        title: AppLocalizations.of(context).testSucceeded,
+        detail: _result?.summary ?? AppLocalizations.of(context).testCompleted,
       ),
       _SourceDebugTestStatus.failed => (
         icon: Icons.error_outline,
         color: errorColor,
-        title: '测试失败',
-        detail: _error ?? '测试未完成',
+        title: AppLocalizations.of(context).testFailed,
+        detail: _error ?? AppLocalizations.of(context).testIncomplete,
       ),
     };
   }
@@ -154,19 +161,36 @@ class _SourceDebugTestSheetState extends State<SourceDebugTestSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('实时状态', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          AppLocalizations.of(context).liveStatus,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 4),
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.swap_horiz_outlined),
-          title: Text('请求 ${requests.length} 个'),
-          subtitle: Text('进行中 $pending · 已完成 $completed · 失败 $failed'),
+          title: Text(
+            AppLocalizations.of(
+              context,
+            ).requestCount((requests.length).toString()),
+          ),
+          subtitle: Text(
+            AppLocalizations.of(context).requestStatusCounts(
+              (pending).toString(),
+              (completed).toString(),
+              (failed).toString(),
+            ),
+          ),
         ),
         if (state.host.browserTabs.isNotEmpty)
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.web_outlined),
-            title: Text('WebView ${state.host.browserTabs.length} 个'),
+            title: Text(
+              AppLocalizations.of(
+                context,
+              ).webViewCount((state.host.browserTabs.length).toString()),
+            ),
             subtitle: Text(
               state.host.browserTabs.last.url,
               maxLines: 2,
@@ -175,7 +199,10 @@ class _SourceDebugTestSheetState extends State<SourceDebugTestSheet> {
           ),
         if (logs.isNotEmpty) ...[
           const SizedBox(height: 4),
-          Text('最近事件', style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            AppLocalizations.of(context).recentEvents,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           const SizedBox(height: 4),
           ...logs.map(
             (entry) => ListTile(
@@ -205,7 +232,10 @@ class _SourceDebugTestSheetState extends State<SourceDebugTestSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 12),
-        Text('测试结果', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          AppLocalizations.of(context).testResults,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         const SizedBox(height: 4),
         ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 12),
@@ -254,12 +284,12 @@ class _SourceDebugTestSheetState extends State<SourceDebugTestSheet> {
                       ),
                     ),
                     IconButton(
-                      tooltip: '重新测试',
+                      tooltip: AppLocalizations.of(context).retest,
                       onPressed: _running ? null : _runProject,
                       icon: const Icon(Icons.refresh),
                     ),
                     IconButton(
-                      tooltip: '关闭',
+                      tooltip: AppLocalizations.of(context).close,
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
                     ),
@@ -294,7 +324,7 @@ class _SourceDebugTestSheetState extends State<SourceDebugTestSheet> {
                         labelText: project.inputLabel,
                         hintText: project.placeholder,
                         suffixIcon: IconButton(
-                          tooltip: '运行测试',
+                          tooltip: AppLocalizations.of(context).runTest,
                           onPressed: _running ? null : _runProject,
                           icon: _running
                               ? const SizedBox(

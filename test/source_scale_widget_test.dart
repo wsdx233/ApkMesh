@@ -1,6 +1,7 @@
 import 'package:apk_mesh/core/app_state.dart';
 import 'package:apk_mesh/core/models.dart';
 import 'package:apk_mesh/core/source_runtime.dart';
+import 'package:apk_mesh/l10n/app_localizations.dart';
 import 'package:apk_mesh/pages/home_page.dart';
 import 'package:apk_mesh/pages/sources_page.dart';
 import 'package:apk_mesh/widgets/app_result_tile.dart';
@@ -25,6 +26,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: SourcesPage(state: state)),
       ),
     );
@@ -45,6 +49,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: HomePage(state: state, controller: controller),
         ),
@@ -82,6 +89,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: HomePage(state: state, controller: controller),
         ),

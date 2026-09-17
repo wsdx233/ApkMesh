@@ -1,4 +1,3 @@
-
 <div align="center">
   <img src="web/icons/Icon-512.png" alt="APK Mesh Logo" width="128" height="128" />
   <h1>APK Mesh</h1>
@@ -20,6 +19,14 @@ APK Mesh 是一个跨平台的 APK 源聚合客户端。它采用去中心化的
 * **高级安装机制**：在 Android 平台上，支持调用系统默认安装器，同时支持配置 Shizuku 实现无 root 权限的静默安装。
 * **灵活的源管理**：支持从 HTTPS URL 远程导入 `.js` 源文件，或通过系统文件选择器导入独立的 `.js` 及打包的 `.zip` 源脚本。
 * **独立开发者工具**：配套提供完全独立的 Python CLI 调试器，无需 Android 环境即可在桌面端进行源脚本的开发、录制、回放与 Trace 调试。
+
+## 界面语言
+
+支持简体中文和 English。在「设置 → 界面语言」中可选择「跟随系统」「简体中文」或「English」，切换立即生效并在重启后保留。默认跟随系统：中文系统使用简体中文，其他系统使用英文。
+
+界面语言与「翻译设置」中的目标语言相互独立；源站返回的名称、描述、分类和源脚本输出仍保留原文或使用现有的内容翻译功能。Android 的通知和安装提示同步使用界面语言。
+
+本地化文案位于 `lib/l10n/app_en.arb` 和 `lib/l10n/app_zh.arb`，使用 Flutter 官方 `gen-l10n` 生成类型安全的接口。修改文案后运行 `flutter gen-l10n`；新增语言时同时更新语言选项、系统语言回退规则和 Android `res/values-*` 文案。不要手工修改生成的 `app_localizations*.dart` 文件。
 
 ## 免责声明与合规性
 

@@ -8,6 +8,7 @@ import '../core/app_state.dart';
 import '../core/debug_log.dart';
 import '../core/models.dart';
 import '../core/source_runtime.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/empty_message.dart';
 
 class DebugSheet extends StatefulWidget {
@@ -64,18 +65,21 @@ class _DebugSheetState extends State<DebugSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '调试信息',
+                            AppLocalizations.of(context).debugInformation,
                             style: Theme.of(context).textTheme.headlineSmall,
                           ),
                           Text(
-                            '${state.debug.requests.length} 个请求 · ${state.debug.entries.length} 条日志',
+                            AppLocalizations.of(context).debugCounts(
+                              (state.debug.requests.length).toString(),
+                              (state.debug.entries.length).toString(),
+                            ),
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      tooltip: '清空调试记录',
+                      tooltip: AppLocalizations.of(context).clearDebug,
                       onPressed:
                           state.debug.entries.isEmpty &&
                               state.debug.requests.isEmpty
@@ -84,7 +88,7 @@ class _DebugSheetState extends State<DebugSheet> {
                       icon: const Icon(Icons.delete_sweep_outlined),
                     ),
                     IconButton(
-                      tooltip: '关闭',
+                      tooltip: AppLocalizations.of(context).close,
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
                     ),
@@ -95,15 +99,15 @@ class _DebugSheetState extends State<DebugSheet> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
                 child: SegmentedButton<_DebugSection>(
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                       value: _DebugSection.overview,
-                      label: Text('概览'),
+                      label: Text(AppLocalizations.of(context).overview),
                       icon: Icon(Icons.dashboard_outlined),
                     ),
                     ButtonSegment(
                       value: _DebugSection.requests,
-                      label: Text('请求'),
+                      label: Text(AppLocalizations.of(context).requests),
                       icon: Icon(Icons.swap_horiz),
                     ),
                     ButtonSegment(
@@ -113,12 +117,12 @@ class _DebugSheetState extends State<DebugSheet> {
                     ),
                     ButtonSegment(
                       value: _DebugSection.projects,
-                      label: Text('项目'),
+                      label: Text(AppLocalizations.of(context).projects),
                       icon: Icon(Icons.play_circle_outline),
                     ),
                     ButtonSegment(
                       value: _DebugSection.logs,
-                      label: Text('日志'),
+                      label: Text(AppLocalizations.of(context).logs),
                       icon: Icon(Icons.notes_outlined),
                     ),
                   ],
@@ -156,7 +160,10 @@ class _DebugSheetState extends State<DebugSheet> {
     final tabs = state.host.browserTabs;
     final logs = state.debug.entries.reversed.take(5).toList();
     return [
-      Text('运行时', style: Theme.of(context).textTheme.titleMedium),
+      Text(
+        AppLocalizations.of(context).runtime,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
       ListTile(
         contentPadding: EdgeInsets.zero,
         leading: Icon(
@@ -164,29 +171,52 @@ class _DebugSheetState extends State<DebugSheet> {
               ? Icons.check_circle_outline
               : Icons.warning_amber_outlined,
         ),
-        title: Text(state.sourceRuntimeReady ? 'QuickJS 源已加载' : '使用演示源'),
+        title: Text(
+          state.sourceRuntimeReady
+              ? AppLocalizations.of(context).quickJsLoaded
+              : AppLocalizations.of(context).usingDemo,
+        ),
         subtitle: Text(
           state.runtimeError ??
-              '已启用源：${state.sources.where((source) => source.status == SourceStatus.enabled).map((source) => source.name).join('、')}',
+              AppLocalizations.of(context).enabledSources(
+                (state.sources
+                        .where(
+                          (source) => source.status == SourceStatus.enabled,
+                        )
+                        .map((source) => source.name)
+                        .join('、'))
+                    .toString(),
+              ),
         ),
       ),
       ListTile(
         contentPadding: EdgeInsets.zero,
         leading: const Icon(Icons.web_outlined),
-        title: Text('WebView：${state.host.supportsBrowser ? '可用' : '不可用'}'),
+        title: Text(
+          'WebView：${state.host.supportsBrowser ? AppLocalizations.of(context).available : AppLocalizations.of(context).unavailable}',
+        ),
         subtitle: Text(
-          '活动标签 ${tabs.where((tab) => tab.active).length} 个 · 安装能力：${state.host.supportsInstall ? '可用' : '不可用'}',
+          AppLocalizations.of(context).runtimeCapabilities(
+            (tabs.where((tab) => tab.active).length).toString(),
+            (state.host.supportsInstall
+                    ? AppLocalizations.of(context).available
+                    : AppLocalizations.of(context).unavailable)
+                .toString(),
+          ),
         ),
       ),
       const SizedBox(height: 8),
-      Text('WebView 状态', style: Theme.of(context).textTheme.titleMedium),
+      Text(
+        AppLocalizations.of(context).webViewStatus,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
       const SizedBox(height: 4),
       if (tabs.isEmpty)
-        const ListTile(
+        ListTile(
           contentPadding: EdgeInsets.zero,
           leading: Icon(Icons.web_asset_off_outlined),
-          title: Text('暂无 WebView 标签'),
-          subtitle: Text('调试项目运行后可点击标签查看页面。'),
+          title: Text(AppLocalizations.of(context).noWebViewTabs),
+          subtitle: Text(AppLocalizations.of(context).webViewPreviewHint),
         )
       else
         ...tabs
@@ -200,16 +230,23 @@ class _DebugSheetState extends State<DebugSheet> {
       const SizedBox(height: 8),
       Row(
         children: [
-          Text('最近请求', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            AppLocalizations.of(context).recentRequests,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(width: 8),
-          Text('${state.debug.requests.length} 个'),
+          Text(
+            AppLocalizations.of(
+              context,
+            ).itemCount((state.debug.requests.length).toString()),
+          ),
         ],
       ),
       if (requests.isEmpty)
-        const ListTile(
+        ListTile(
           contentPadding: EdgeInsets.zero,
           leading: Icon(Icons.swap_horiz_outlined),
-          title: Text('暂无请求'),
+          title: Text(AppLocalizations.of(context).noRequests),
         )
       else
         ...requests.map(
@@ -219,12 +256,15 @@ class _DebugSheetState extends State<DebugSheet> {
           ),
         ),
       const SizedBox(height: 8),
-      Text('运行日志', style: Theme.of(context).textTheme.titleMedium),
+      Text(
+        AppLocalizations.of(context).runtimeLogs,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
       if (logs.isEmpty)
-        const ListTile(
+        ListTile(
           contentPadding: EdgeInsets.zero,
           leading: Icon(Icons.article_outlined),
-          title: Text('暂无日志'),
+          title: Text(AppLocalizations.of(context).noLogs),
         )
       else
         ...logs.map((entry) => DebugLogTile(entry: entry)),
@@ -236,17 +276,24 @@ class _DebugSheetState extends State<DebugSheet> {
     return [
       Row(
         children: [
-          Text('请求记录', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            AppLocalizations.of(context).requestRecords,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(width: 8),
-          Text('${requests.length} 个 · 点击查看内容'),
+          Text(
+            AppLocalizations.of(
+              context,
+            ).requestRecordsCount((requests.length).toString()),
+          ),
         ],
       ),
       const SizedBox(height: 8),
       if (requests.isEmpty)
-        const EmptyMessage(
+        EmptyMessage(
           icon: Icons.swap_horiz_outlined,
-          title: '暂无请求记录',
-          detail: '运行搜索项目或应用搜索后，请求会出现在这里。',
+          title: AppLocalizations.of(context).noRequestRecords,
+          detail: AppLocalizations.of(context).requestRecordsHint,
         )
       else
         ...requests.map(
@@ -263,17 +310,22 @@ class _DebugSheetState extends State<DebugSheet> {
     return [
       Row(
         children: [
-          Text('WebView 状态', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            AppLocalizations.of(context).webViewStatus,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(width: 8),
-          Text('${tabs.length} 个'),
+          Text(
+            AppLocalizations.of(context).itemCount((tabs.length).toString()),
+          ),
         ],
       ),
       const SizedBox(height: 8),
       if (tabs.isEmpty)
-        const EmptyMessage(
+        EmptyMessage(
           icon: Icons.web_asset_off_outlined,
-          title: '暂无 WebView 标签',
-          detail: '运行“获取应用详情”项目后，可以点开对应标签进行可视化查看。',
+          title: AppLocalizations.of(context).noWebViewTabs,
+          detail: AppLocalizations.of(context).webViewDetailsHint,
         )
       else
         ...tabs.map(
@@ -288,17 +340,24 @@ class _DebugSheetState extends State<DebugSheet> {
     return [
       Row(
         children: [
-          Text('调试项目', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            AppLocalizations.of(context).debugProjects,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(width: 8),
-          Text('${projects.length} 个'),
+          Text(
+            AppLocalizations.of(
+              context,
+            ).itemCount((projects.length).toString()),
+          ),
         ],
       ),
       const SizedBox(height: 8),
       if (projects.isEmpty)
-        const EmptyMessage(
+        EmptyMessage(
           icon: Icons.play_disabled_outlined,
-          title: '源未声明调试项目',
-          detail: '源可以在 manifest.debugProjects 中声明可触发的调试流程。',
+          title: AppLocalizations.of(context).noDebugProjects,
+          detail: AppLocalizations.of(context).debugProjectsHint,
         )
       else
         ...projects.map((project) => DebugProjectTile(project: project)),
@@ -310,17 +369,20 @@ class _DebugSheetState extends State<DebugSheet> {
     return [
       Row(
         children: [
-          Text('运行日志', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            AppLocalizations.of(context).runtimeLogs,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(width: 8),
-          Text('${logs.length} 条'),
+          Text(AppLocalizations.of(context).logCount((logs.length).toString())),
         ],
       ),
       const SizedBox(height: 8),
       if (logs.isEmpty)
-        const EmptyMessage(
+        EmptyMessage(
           icon: Icons.article_outlined,
-          title: '暂无日志',
-          detail: '执行搜索、详情或调试项目后，运行事件会显示在这里。',
+          title: AppLocalizations.of(context).noLogs,
+          detail: AppLocalizations.of(context).logsHint,
         )
       else
         ...logs.map((entry) => DebugLogTile(entry: entry)),
@@ -333,9 +395,15 @@ class _DebugSheetState extends State<DebugSheet> {
         ? project.defaultInput.trim()
         : controller.text.trim();
     if (input.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('请输入${project.inputLabel}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).enterValue((project.inputLabel).toString()),
+          ),
+        ),
+      );
       return;
     }
     setState(() => _runningProjects.add(project.key));
@@ -350,9 +418,15 @@ class _DebugSheetState extends State<DebugSheet> {
     } catch (error) {
       if (mounted) {
         setState(() => _runningProjects.remove(project.key));
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('调试项目失败：$error')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              ).debugProjectFailed((error).toString()),
+            ),
+          ),
+        );
       }
     }
   }
@@ -401,7 +475,7 @@ class DebugProjectTile extends StatelessWidget {
               labelText: project.inputLabel,
               hintText: project.placeholder,
               suffixIcon: IconButton(
-                tooltip: '运行调试项目',
+                tooltip: AppLocalizations.of(context).runDebugProject,
                 onPressed: running ? null : () => sheet._runProject(project),
                 icon: running
                     ? const SizedBox(
@@ -452,9 +526,9 @@ class DebugRequestTile extends StatelessWidget {
     final status =
         request.statusCode?.toString() ??
         switch (request.state) {
-          DebugRequestState.pending => '进行中',
-          DebugRequestState.completed => '完成',
-          DebugRequestState.failed => '失败',
+          DebugRequestState.pending => AppLocalizations.of(context).inProgress,
+          DebugRequestState.completed => AppLocalizations.of(context).completed,
+          DebugRequestState.failed => AppLocalizations.of(context).failed,
         };
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -466,7 +540,11 @@ class DebugRequestTile extends StatelessWidget {
       ),
       title: Text('${request.method} $status'),
       subtitle: Text(
-        '${request.url}\n${request.duration?.inMilliseconds ?? 0} ms · ${request.responseBody?.length ?? 0} 字符',
+        AppLocalizations.of(context).requestSummary(
+          (request.url).toString(),
+          (request.duration?.inMilliseconds ?? 0).toString(),
+          (request.responseBody?.length ?? 0).toString(),
+        ),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
@@ -498,12 +576,12 @@ class DebugRequestDialog extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        '${request.method} ${request.statusCode ?? '请求'}',
+                        '${request.method} ${request.statusCode ?? AppLocalizations.of(context).requests}',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),
                     IconButton(
-                      tooltip: '关闭',
+                      tooltip: AppLocalizations.of(context).close,
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
                     ),
@@ -518,17 +596,20 @@ class DebugRequestDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const TabBar(
+              TabBar(
                 tabs: [
-                  Tab(text: '响应内容'),
-                  Tab(text: '请求详情'),
+                  Tab(text: AppLocalizations.of(context).responseBody),
+                  Tab(text: AppLocalizations.of(context).requestDetails),
                 ],
               ),
               Expanded(
                 child: TabBarView(
                   children: [
                     DebugBodyView(
-                      body: request.responseBody ?? request.error ?? '暂无响应内容',
+                      body:
+                          request.responseBody ??
+                          request.error ??
+                          AppLocalizations.of(context).noResponseBody,
                     ),
                     DebugMetadataView(request: request),
                   ],
@@ -564,15 +645,28 @@ class DebugMetadataView extends StatelessWidget {
   Widget build(BuildContext context) => ListView(
     padding: const EdgeInsets.all(20),
     children: [
-      Text('请求头', style: Theme.of(context).textTheme.titleSmall),
+      Text(
+        AppLocalizations.of(context).requestHeaders,
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
       const SizedBox(height: 4),
-      SelectableText(formatHeaders(request.requestHeaders)),
+      SelectableText(
+        formatHeaders(request.requestHeaders, AppLocalizations.of(context)),
+      ),
       const SizedBox(height: 16),
-      Text('响应头', style: Theme.of(context).textTheme.titleSmall),
+      Text(
+        AppLocalizations.of(context).responseHeaders,
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
       const SizedBox(height: 4),
-      SelectableText(formatHeaders(request.responseHeaders)),
+      SelectableText(
+        formatHeaders(request.responseHeaders, AppLocalizations.of(context)),
+      ),
       const SizedBox(height: 16),
-      Text('状态', style: Theme.of(context).textTheme.titleSmall),
+      Text(
+        AppLocalizations.of(context).status,
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
       SelectableText(
         '${request.state.name} · ${request.duration?.inMilliseconds ?? 0} ms${request.error == null ? '' : '\n${request.error}'}',
       ),
@@ -589,8 +683,10 @@ class DebugWebViewDialog extends StatefulWidget {
   State<DebugWebViewDialog> createState() => _DebugWebViewDialogState();
 }
 
+enum _WebViewLoadStatus { loading, loaded, failed }
+
 class _DebugWebViewDialogState extends State<DebugWebViewDialog> {
-  String status = '正在加载';
+  _WebViewLoadStatus status = _WebViewLoadStatus.loading;
   BrowserTabViewHandle? _tabView;
 
   @override
@@ -607,6 +703,11 @@ class _DebugWebViewDialogState extends State<DebugWebViewDialog> {
         (widget.tab.url.startsWith('http://') ||
             widget.tab.url.startsWith('https://'));
     final attachedTab = _tabView;
+    final statusLabel = switch (status) {
+      _WebViewLoadStatus.loading => AppLocalizations.of(context).loading,
+      _WebViewLoadStatus.loaded => AppLocalizations.of(context).loaded,
+      _WebViewLoadStatus.failed => AppLocalizations.of(context).loadFailed,
+    };
     return Dialog(
       child: SizedBox(
         width: size.width > 900 ? 840 : size.width * .94,
@@ -624,18 +725,18 @@ class _DebugWebViewDialogState extends State<DebugWebViewDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'WebView 可视化查看',
+                          AppLocalizations.of(context).webViewPreview,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         Text(
-                          '${widget.tab.active ? '活动' : '历史'} · $status',
+                          '${widget.tab.active ? AppLocalizations.of(context).active : AppLocalizations.of(context).history} · $statusLabel',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
                     ),
                   ),
                   IconButton(
-                    tooltip: '关闭',
+                    tooltip: AppLocalizations.of(context).close,
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close),
                   ),
@@ -699,19 +800,27 @@ class _DebugWebViewDialogState extends State<DebugWebViewDialog> {
                                   controller,
                                 ),
                       onLoadStart: (_, _) {
-                        if (mounted) setState(() => status = '加载中');
+                        if (mounted) {
+                          setState(() => status = _WebViewLoadStatus.loading);
+                        }
                       },
                       onLoadStop: (_, _) {
-                        if (mounted) setState(() => status = '已加载');
+                        if (mounted) {
+                          setState(() => status = _WebViewLoadStatus.loaded);
+                        }
                       },
                       onReceivedError: (_, _, _) {
-                        if (mounted) setState(() => status = '加载失败');
+                        if (mounted) {
+                          setState(() => status = _WebViewLoadStatus.failed);
+                        }
                       },
                     )
-                  : const Center(
+                  : Center(
                       child: Padding(
                         padding: EdgeInsets.all(24),
-                        child: Text('当前平台不支持可视化 WebView，仅保留标签和操作记录。'),
+                        child: Text(
+                          AppLocalizations.of(context).webViewUnsupported,
+                        ),
                       ),
                     ),
             ),
@@ -738,7 +847,9 @@ class DebugTabTile extends StatelessWidget {
         tab.active ? Icons.web : Icons.web_asset_off_outlined,
         color: color,
       ),
-      title: Text('${tab.active ? '活动' : '已关闭'} · ${tab.state}'),
+      title: Text(
+        '${tab.active ? AppLocalizations.of(context).active : AppLocalizations.of(context).closed} · ${tab.state}',
+      ),
       subtitle: Text(
         '${tab.url}\n${tab.id} · ${formatDebugTime(tab.startedAt)}',
         maxLines: 3,
@@ -777,8 +888,8 @@ class DebugLogTile extends StatelessWidget {
   }
 }
 
-String formatHeaders(Map<String, String> headers) {
-  if (headers.isEmpty) return '无';
+String formatHeaders(Map<String, String> headers, AppLocalizations strings) {
+  if (headers.isEmpty) return strings.none;
   return headers.entries
       .map((entry) => '${entry.key}: ${entry.value}')
       .join('\n');

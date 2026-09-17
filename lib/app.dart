@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'core/app_language.dart';
 import 'core/app_state.dart';
 import 'core/models.dart';
+import 'l10n/app_localizations.dart';
 import 'pages/debug_sheet.dart';
 import 'pages/details_sheet.dart';
 import 'pages/downloads_page.dart';
@@ -45,6 +47,11 @@ class _ApkMeshAppState extends State<ApkMeshApp> with WidgetsBindingObserver {
   }
 
   @override
+  void didChangeLocales(List<Locale>? locales) {
+    state.updateSystemLocale();
+  }
+
+  @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: state,
     builder: (context, _) {
@@ -58,6 +65,10 @@ class _ApkMeshAppState extends State<ApkMeshApp> with WidgetsBindingObserver {
       );
       return MaterialApp(
         title: 'APK Mesh',
+        locale: state.appLanguage.locale,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localeResolutionCallback: (locale, _) => resolveAppLocale(locale),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
@@ -127,31 +138,31 @@ class _ShellState extends State<Shell> {
       SourcesPage(state: widget.state),
       SettingsPage(state: widget.state),
     ];
-    final destinations = const [
+    final destinations = [
       NavigationDestination(
         icon: Icon(Icons.home_outlined),
         selectedIcon: Icon(Icons.home),
-        label: '主页',
+        label: AppLocalizations.of(context).home,
       ),
       NavigationDestination(
         icon: Icon(Icons.download_outlined),
         selectedIcon: Icon(Icons.download),
-        label: '下载',
+        label: AppLocalizations.of(context).downloads,
       ),
       NavigationDestination(
         icon: Icon(Icons.bookmark_border),
         selectedIcon: Icon(Icons.bookmark),
-        label: '收藏',
+        label: AppLocalizations.of(context).favorites,
       ),
       NavigationDestination(
         icon: Icon(Icons.hub_outlined),
         selectedIcon: Icon(Icons.hub),
-        label: '源管理',
+        label: AppLocalizations.of(context).sources,
       ),
       NavigationDestination(
         icon: Icon(Icons.settings_outlined),
         selectedIcon: Icon(Icons.settings),
-        label: '设置',
+        label: AppLocalizations.of(context).settings,
       ),
     ];
     final visibleSearchQuery = index == 0 ? submittedSearchQuery : null;
@@ -172,7 +183,7 @@ class _ShellState extends State<Shell> {
                 : null,
             leading: visibleSearchQuery != null
                 ? IconButton(
-                    tooltip: '返回主页',
+                    tooltip: AppLocalizations.of(context).backHome,
                     onPressed: _returnHome,
                     icon: const Icon(Icons.arrow_back),
                   )
@@ -201,7 +212,7 @@ class _ShellState extends State<Shell> {
                         textInputAction: TextInputAction.search,
                         onSubmitted: (_) => _submitSearch(),
                         decoration: InputDecoration(
-                          hintText: '搜索应用名称或包名',
+                          hintText: AppLocalizations.of(context).searchHint,
                           prefixIcon: const Icon(Icons.search, size: 20),
                           suffixIcon: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -215,7 +226,9 @@ class _ShellState extends State<Shell> {
                                       ),
                                     )
                                   : IconButton(
-                                      tooltip: '翻译为英文',
+                                      tooltip: AppLocalizations.of(
+                                        context,
+                                      ).translateEnglish,
                                       onPressed: _translateSearch,
                                       icon: const Icon(
                                         Icons.translate_outlined,
@@ -223,7 +236,9 @@ class _ShellState extends State<Shell> {
                                       ),
                                     ),
                               IconButton(
-                                tooltip: '清空搜索',
+                                tooltip: AppLocalizations.of(
+                                  context,
+                                ).clearSearch,
                                 onPressed: searchController.clear,
                                 icon: const Icon(Icons.clear, size: 20),
                               ),
@@ -260,13 +275,13 @@ class _ShellState extends State<Shell> {
                   child: searchOpen
                       ? IconButton(
                           key: const ValueKey('close-search'),
-                          tooltip: '关闭搜索',
+                          tooltip: AppLocalizations.of(context).closeSearch,
                           onPressed: () => setState(() => searchOpen = false),
                           icon: const Icon(Icons.close),
                         )
                       : IconButton(
                           key: const ValueKey('open-search'),
-                          tooltip: '搜索',
+                          tooltip: AppLocalizations.of(context).search,
                           onPressed: _openSearch,
                           icon: const Icon(Icons.search),
                         ),
@@ -274,13 +289,13 @@ class _ShellState extends State<Shell> {
               if (index == 0 && !searchOpen && pageJumpAvailable)
                 IconButton(
                   key: const ValueKey('jump-to-page'),
-                  tooltip: '跳转页码',
+                  tooltip: AppLocalizations.of(context).jumpToPage,
                   onPressed: () => homeKey.currentState?.showPageJumpDialog(),
                   icon: const Icon(Icons.find_in_page_outlined),
                 ),
               if (kDebugMode)
                 IconButton(
-                  tooltip: '调试',
+                  tooltip: AppLocalizations.of(context).debug,
                   onPressed: () => _showDebugSheet(context),
                   icon: const Icon(Icons.bug_report_outlined),
                 ),
@@ -293,31 +308,31 @@ class _ShellState extends State<Shell> {
                   selectedIndex: index,
                   onDestinationSelected: _selectPage,
                   labelType: NavigationRailLabelType.all,
-                  destinations: const [
+                  destinations: [
                     NavigationRailDestination(
                       icon: Icon(Icons.home_outlined),
                       selectedIcon: Icon(Icons.home),
-                      label: Text('主页'),
+                      label: Text(AppLocalizations.of(context).home),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.download_outlined),
                       selectedIcon: Icon(Icons.download),
-                      label: Text('下载'),
+                      label: Text(AppLocalizations.of(context).downloads),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.bookmark_border),
                       selectedIcon: Icon(Icons.bookmark),
-                      label: Text('收藏'),
+                      label: Text(AppLocalizations.of(context).favorites),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.hub_outlined),
                       selectedIcon: Icon(Icons.hub),
-                      label: Text('源管理'),
+                      label: Text(AppLocalizations.of(context).sources),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.settings_outlined),
                       selectedIcon: Icon(Icons.settings),
-                      label: Text('设置'),
+                      label: Text(AppLocalizations.of(context).settings),
                     ),
                   ],
                 ),
@@ -332,6 +347,11 @@ class _ShellState extends State<Shell> {
                   selectedIndex: index,
                   onDestinationSelected: _selectPage,
                   destinations: destinations,
+                  labelTextStyle: constraints.maxWidth < 360
+                      ? WidgetStatePropertyAll(
+                          Theme.of(context).textTheme.labelSmall,
+                        )
+                      : null,
                 ),
         );
         return PopScope<Object?>(
@@ -383,9 +403,15 @@ class _ShellState extends State<Shell> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('翻译失败：$error')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(
+                context,
+              ).translationFailed((error).toString()),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => searchTranslationLoading = false);
