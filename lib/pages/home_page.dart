@@ -574,19 +574,23 @@ class HomePageState extends State<HomePage> {
     final ranker = _searchRanker;
     if (ranker == null) return 0;
 
-    final scoreOrder = ranker.score(right).compareTo(ranker.score(left));
-    if (scoreOrder != 0) return scoreOrder;
+    return ranker.compare(
+      left,
+      right,
+      tieBreaker: (l, r) {
+        const fallbackOrder = 1 << 30;
+        final leftResultOrder =
+            _searchResultOrder[l.sourceId]?[l.id] ?? fallbackOrder;
+        final rightResultOrder =
+            _searchResultOrder[r.sourceId]?[r.id] ?? fallbackOrder;
+        final resultOrder = leftResultOrder.compareTo(rightResultOrder);
+        if (resultOrder != 0) return resultOrder;
 
-    const fallbackOrder = 1 << 30;
-    final sourceOrder = (_searchSourceOrder[left.sourceId] ?? fallbackOrder)
-        .compareTo(_searchSourceOrder[right.sourceId] ?? fallbackOrder);
-    if (sourceOrder != 0) return sourceOrder;
-
-    final leftResultOrder =
-        _searchResultOrder[left.sourceId]?[left.id] ?? fallbackOrder;
-    final rightResultOrder =
-        _searchResultOrder[right.sourceId]?[right.id] ?? fallbackOrder;
-    return leftResultOrder.compareTo(rightResultOrder);
+        final sourceOrder = (_searchSourceOrder[l.sourceId] ?? fallbackOrder)
+            .compareTo(_searchSourceOrder[r.sourceId] ?? fallbackOrder);
+        return sourceOrder;
+      },
+    );
   }
 
   void _mergeRegisteredSearchResults(List<AppListing> newResults) {

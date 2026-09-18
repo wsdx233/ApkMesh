@@ -284,6 +284,107 @@ void main() {
     },
   );
 
+  test(
+    'registry ranks exact match first even when returned by later source',
+    () async {
+      final registry = SourceRegistry(
+        scripts: [
+          _StaticSearchSource('first', [
+            _listing('first', 'Guide for Telegram Messenger Pro'),
+            _listing('first', 'Telegram Wallpaper HD Free'),
+            _listing('first', 'Telegram Sticker Pack 2024'),
+          ]),
+          _StaticSearchSource('second', [
+            _listing('second', 'Telegram'),
+            _listing('second', 'Telegram X'),
+          ]),
+        ],
+      );
+
+      final results = await registry.search('Telegram', DemoHostApi());
+
+      expect(results.first.name, 'Telegram');
+      expect(results[1].name, 'Telegram X');
+    },
+  );
+
+  test('registry ranks exact package name match first', () async {
+    final registry = SourceRegistry(
+      scripts: [
+        _StaticSearchSource('first', [
+          _listing(
+            'first',
+            'Guide for YouTube',
+            packageName: 'com.guide.youtube',
+          ),
+          _listing(
+            'first',
+            'Tube Downloader',
+            packageName: 'com.video.tubedownloader',
+          ),
+        ]),
+        _StaticSearchSource('second', [
+          _listing(
+            'second',
+            'YouTube',
+            packageName: 'com.google.android.youtube',
+          ),
+        ]),
+      ],
+    );
+
+    final results = await registry.search(
+      'com.google.android.youtube',
+      DemoHostApi(),
+    );
+
+    expect(results.first.name, 'YouTube');
+    expect(results.first.packageName, 'com.google.android.youtube');
+  });
+
+  test(
+    'registry penalizes spam derivative titles like guide and wallpaper',
+    () async {
+      final registry = SourceRegistry(
+        scripts: [
+          _StaticSearchSource('first', [
+            _listing('first', 'Clash Guide & Tips'),
+            _listing('first', 'Clash Wallpaper 4K'),
+          ]),
+          _StaticSearchSource('second', [
+            _listing('second', 'Clash Meta'),
+            _listing('second', 'Clash Verge'),
+          ]),
+        ],
+      );
+
+      final results = await registry.search('Clash', DemoHostApi());
+
+      final topTwo = results.take(2).map((app) => app.name).toSet();
+      expect(topTwo, containsAll(['Clash Meta', 'Clash Verge']));
+    },
+  );
+
+  test(
+    'registry ranks irrelevant apps with no matching keywords at the bottom',
+    () async {
+      final registry = SourceRegistry(
+        scripts: [
+          _StaticSearchSource('first', [
+            _listing('first', 'Random Unrelated Browser'),
+            _listing('first', 'Calculator Plus'),
+          ]),
+          _StaticSearchSource('second', [_listing('second', 'F-Droid Client')]),
+        ],
+      );
+
+      final results = await registry.search('F-Droid', DemoHostApi());
+
+      expect(results.first.name, 'F-Droid Client');
+      expect(results.last.name, isNot('F-Droid Client'));
+    },
+  );
+
   test('registry loads source-defined catalog tabs and pages', () async {
     final registry = SourceRegistry(scripts: [ExampleCatalogSource()]);
     final catalog = await registry.catalog(
@@ -535,18 +636,19 @@ class _StaticSearchSource implements ApkSourceScript {
   Future<void> dispose() async {}
 }
 
-AppListing _listing(String sourceId, String name) => AppListing(
-  id: '$sourceId/$name',
-  sourceId: sourceId,
-  name: name,
-  packageName: '',
-  version: '',
-  size: '',
-  updatedAt: '',
-  category: '',
-  sourceName: sourceId,
-  iconUrl: '',
-);
+AppListing _listing(String sourceId, String name, {String packageName = ''}) =>
+    AppListing(
+      id: '$sourceId/$name',
+      sourceId: sourceId,
+      name: name,
+      packageName: packageName,
+      version: '',
+      size: '',
+      updatedAt: '',
+      category: '',
+      sourceName: sourceId,
+      iconUrl: '',
+    );
 
 class _SearchGate {
   int started = 0;

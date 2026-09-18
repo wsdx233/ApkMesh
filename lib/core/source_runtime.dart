@@ -187,29 +187,161 @@ abstract interface class DebugProjectSource {
   );
 }
 
+bool _isAsciiWordChar(int codeUnit) {
+  return (codeUnit >= 48 && codeUnit <= 57) || // 0-9
+      (codeUnit >= 65 && codeUnit <= 90) || // A-Z
+      (codeUnit >= 97 && codeUnit <= 122); // a-z
+}
+
+bool _containsWordBoundary(String text, String pattern) {
+  if (pattern.isEmpty) return false;
+  var startIndex = 0;
+  while (true) {
+    final index = text.indexOf(pattern, startIndex);
+    if (index == -1) return false;
+    final beforeOk =
+        index == 0 || !_isAsciiWordChar(text.codeUnitAt(index - 1));
+    final afterIndex = index + pattern.length;
+    final afterOk =
+        afterIndex >= text.length ||
+        !_isAsciiWordChar(text.codeUnitAt(afterIndex));
+    if (beforeOk && afterOk) return true;
+    startIndex = index + 1;
+  }
+}
+
 List<String> _searchKeywords(String query) {
+  final normalized = query.trim().toLowerCase();
+  if (normalized.isEmpty) return const [];
   final unique = <String>{};
-  for (final keyword in query.toLowerCase().split(
-    RegExp(r'[\s,，、;；|/\\_-]+'),
-  )) {
-    final normalized = keyword.trim();
-    if (normalized.isNotEmpty) unique.add(normalized);
+  for (final keyword in normalized.split(RegExp(r'[\s,，、;；|/\\_-]+'))) {
+    final trimmed = keyword.trim();
+    if (trimmed.isNotEmpty) unique.add(trimmed);
   }
   return unique.toList(growable: false);
 }
 
 class SearchResultRanker {
-  SearchResultRanker(String query) : _keywords = _searchKeywords(query);
+  SearchResultRanker(String query)
+    : rawQuery = query.trim().toLowerCase(),
+      _keywords = _searchKeywords(query);
 
+  final String rawQuery;
   final List<String> _keywords;
 
+  static const _spamKeywords = [
+    'guide',
+    'tips',
+    'tutorial',
+    'wallpaper',
+    'wallpapers',
+    'cheat',
+    'cheats',
+    'walkthrough',
+    'stickers',
+    'sticker',
+    'mod menu',
+    '指南',
+    '攻略',
+    '教程',
+    '壁纸',
+    '贴纸',
+  ];
+
   int score(AppListing app) {
-    final title = app.name.toLowerCase();
+    if (rawQuery.isEmpty) return 0;
+    final title = app.name.trim().toLowerCase();
+    final pkg = app.packageName.trim().toLowerCase();
+
     var result = 0;
-    for (final keyword in _keywords) {
-      if (title.contains(keyword)) result += 1;
+    final queryMatchesTitleExactly = title == rawQuery;
+    final queryMatchesPkgExactly = pkg.isNotEmpty && pkg == rawQuery;
+
+    // 1. 完全精确匹配（Exact Match）—— 最高优先级
+    if (queryMatchesTitleExactly) {
+      result += 100000;
     }
+    if (queryMatchesPkgExactly) {
+      result += 90000;
+    }
+
+    // 2. 前缀匹配（Prefix Match）
+    if (!queryMatchesTitleExactly) {
+      if (title.startsWith(rawQuery)) {
+        final boundary =
+            title.length == rawQuery.length ||
+            !_isAsciiWordChar(title.codeUnitAt(rawQuery.length));
+        result += boundary ? 40000 : 30000;
+      } else if (pkg.isNotEmpty && pkg.startsWith(rawQuery)) {
+        result += 25000;
+      }
+    }
+
+    // 3. 完整短语包含（Phrase Match）
+    if (!queryMatchesTitleExactly && !title.startsWith(rawQuery)) {
+      if (rawQuery.length > 1 && title.contains(rawQuery)) {
+        result += _containsWordBoundary(title, rawQuery) ? 20000 : 12000;
+      } else if (pkg.isNotEmpty && pkg.contains(rawQuery)) {
+        result += 10000;
+      }
+    }
+
+    // 4. 独立关键词命中统计
+    var matchedCount = 0;
+    for (final keyword in _keywords) {
+      if (title.contains(keyword)) {
+        matchedCount += 1;
+        result += _containsWordBoundary(title, keyword) ? 2000 : 1000;
+      } else if (pkg.isNotEmpty && pkg.contains(keyword)) {
+        result += 600;
+      }
+    }
+
+    // 多关键词全部命中奖励
+    if (_keywords.length > 1 && matchedCount == _keywords.length) {
+      result += 5000;
+    }
+
+    // 如果没有任何关键词命中且未命中完整短语/包名，得分为 0
+    if (result == 0) return 0;
+
+    // 5. 蹭热度词降权（若用户搜索词本身不包含该词，则扣分）
+    for (final spam in _spamKeywords) {
+      if (!rawQuery.contains(spam) && _containsWordBoundary(title, spam)) {
+        result -= 6000;
+      }
+    }
+
+    // 6. 严重标题堆砌惩罚（标题长度严重超出 query 且过长）
+    if (title.length > 30 && title.length > rawQuery.length * 2) {
+      final excess = (title.length - 30).clamp(0, 40);
+      result -= excess * 50; // 最多惩罚 2000 分
+    }
+
     return result;
+  }
+
+  int compare(
+    AppListing left,
+    AppListing right, {
+    int Function(AppListing left, AppListing right)? tieBreaker,
+  }) {
+    final leftScore = score(left);
+    final rightScore = score(right);
+    final scoreOrder = rightScore.compareTo(leftScore);
+    if (scoreOrder != 0) return scoreOrder;
+
+    if (tieBreaker != null) {
+      final tieOrder = tieBreaker(left, right);
+      if (tieOrder != 0) return tieOrder;
+    }
+
+    final leftDiff = (left.name.length - rawQuery.length).abs();
+    final rightDiff = (right.name.length - rawQuery.length).abs();
+    final diffOrder = leftDiff.compareTo(rightDiff);
+    if (diffOrder != 0) return diffOrder;
+
+    return left.id.compareTo(right.id);
   }
 }
 
@@ -218,23 +350,26 @@ List<AppListing> _rankSearchResults(
   List<List<AppListing>> batches,
 ) {
   final ranker = SearchResultRanker(query);
-  final ranked = <({AppListing app, int score, int order})>[];
+  final orderMap = <AppListing, int>{};
+  final allApps = <AppListing>[];
   var order = 0;
 
-  // Each distinct keyword contributes at most one point. The original
-  // flattened order is the deterministic tie-breaker for equal scores.
   for (final batch in batches) {
     for (final app in batch) {
-      ranked.add((app: app, score: ranker.score(app), order: order));
+      allApps.add(app);
+      orderMap[app] = order;
       order += 1;
     }
   }
 
-  ranked.sort((left, right) {
-    final scoreOrder = right.score.compareTo(left.score);
-    return scoreOrder == 0 ? left.order.compareTo(right.order) : scoreOrder;
+  allApps.sort((left, right) {
+    return ranker.compare(
+      left,
+      right,
+      tieBreaker: (l, r) => (orderMap[l] ?? 0).compareTo(orderMap[r] ?? 0),
+    );
   });
-  return ranked.map((item) => item.app).toList(growable: false);
+  return allApps;
 }
 
 class SourceRegistry {
