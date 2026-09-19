@@ -1219,5 +1219,80 @@
   "appLanguage": "App language",
   "appLanguageHint": "Changes the interface only, not the translation language for source content",
   "languageChinese": "简体中文",
-  "languageEnglish": "English"
+  "languageEnglish": "English",
+  "autoCheckUpdates": "Auto check for updates",
+  "autoCheckUpdatesSummary": "Automatically check for new versions on launch",
+  "checkForUpdates": "Check for updates",
+  "checkingForUpdates": "Checking for updates...",
+  "alreadyLatestVersion": "Already the latest version ({version})",
+  "@alreadyLatestVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateCheckFailed": "Check for updates failed: {error}",
+  "@updateCheckFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "newVersionAvailable": "New Version Available",
+  "currentVersionLabel": "Current version: {version}",
+  "@currentVersionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "latestVersionLabel": "Latest version: {version}",
+  "@latestVersionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "releaseNotes": "Release Notes",
+  "noReleaseNotes": "No release notes provided",
+  "updateAction": "Update",
+  "dontRemindAgain": "Don''t remind again",
+  "downloadingUpdate": "Downloading update: {percent}%",
+  "@downloadingUpdate": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadUpdateFailed": "Update download failed: {error}",
+  "@downloadUpdateFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadCompleteInstalling": "Download complete, opening installer...",
+  "openInBrowser": "Open in browser",
+  "ignoredVersionHint": "Ignored version: {version} · Tap to restore",
+  "@ignoredVersionHint": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "ignoredVersionRestored": "Update reminders restored for {version}",
+  "@ignoredVersionRestored": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  }
 }

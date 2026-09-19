@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import 'app_language.dart';
+import 'app_update.dart';
 import 'debug_log.dart';
 import 'download_notifications.dart';
 import 'download_store.dart';
@@ -23,7 +24,9 @@ String _newTranslationDeviceId() =>
     'apkmesh-${DateTime.now().microsecondsSinceEpoch}-${math.Random().nextInt(0x100000000)}';
 
 class AppState extends ChangeNotifier {
-  AppState({SourceHostApi? host}) : _hostOverride = host {
+  AppState({SourceHostApi? host, UpdateService? updateService})
+    : _hostOverride = host,
+      _updateService = updateService ?? UpdateService() {
     _sources = [
       ApkSource(
         id: 'apkvision-demo',
@@ -96,6 +99,12 @@ class AppState extends ChangeNotifier {
   Future<void> _downloadPersistenceQueue = Future.value();
   Timer? _downloadPersistenceTimer;
   int _downloadSequence = 0;
+  final UpdateService _updateService;
+  bool _autoCheckUpdates = true;
+  String? _ignoredUpdateVersion;
+  bool _isCheckingUpdate = false;
+  AppReleaseInfo? _latestRelease;
+  String? _lastUpdateCheckError;
   bool _isDisposing = false;
   bool _sourceRuntimeReady = false;
   String? _runtimeError;
@@ -103,6 +112,12 @@ class AppState extends ChangeNotifier {
   static const _favoritesKey = 'library.favorites';
   static const _historyKey = 'library.history';
 
+  UpdateService get updateService => _updateService;
+  bool get autoCheckUpdates => _autoCheckUpdates;
+  String? get ignoredUpdateVersion => _ignoredUpdateVersion;
+  bool get isCheckingUpdate => _isCheckingUpdate;
+  AppReleaseInfo? get latestRelease => _latestRelease;
+  String? get lastUpdateCheckError => _lastUpdateCheckError;
   List<ApkSource> get sources => _sourceView;
   List<DownloadTask> get downloads => List.unmodifiable(_downloads);
   List<AppListing> get favorites => List.unmodifiable(_favorites);
@@ -368,6 +383,67 @@ class AppState extends ChangeNotifier {
     unawaited(_persistSettings());
   }
 
+  Future<void> setAutoCheckUpdates(bool value) async {
+    if (_autoCheckUpdates == value) return;
+    _autoCheckUpdates = value;
+    notifyListeners();
+    await _persistSettings();
+  }
+
+  Future<void> setIgnoredUpdateVersion(String? version) async {
+    final normalized = version != null && version.trim().isNotEmpty
+        ? version.trim()
+        : null;
+    if (_ignoredUpdateVersion == normalized) return;
+    _ignoredUpdateVersion = normalized;
+    notifyListeners();
+    await _persistSettings();
+  }
+
+  Future<void> clearIgnoredUpdateVersion() async {
+    await setIgnoredUpdateVersion(null);
+  }
+
+  Future<AppReleaseInfo?> checkForUpdates({bool manual = false}) async {
+    await _settingsReady;
+    if (!manual && !_autoCheckUpdates) {
+      return null;
+    }
+    if (_isCheckingUpdate) return _latestRelease;
+
+    _isCheckingUpdate = true;
+    _lastUpdateCheckError = null;
+    notifyListeners();
+
+    try {
+      final release = await _updateService.fetchLatestRelease();
+      _latestRelease = release;
+      if (release == null) return null;
+
+      if (!manual) {
+        final isIgnored =
+            _ignoredUpdateVersion != null &&
+            (_ignoredUpdateVersion == release.tagName ||
+                _ignoredUpdateVersion == release.version.raw);
+        if (isIgnored) return null;
+      }
+
+      return release;
+    } catch (error) {
+      _lastUpdateCheckError = error.toString();
+      debug.add(
+        strings.updateCheckFailed(error.toString()),
+        level: DebugLogLevel.warning,
+        category: 'App',
+      );
+      if (manual) rethrow;
+      return null;
+    } finally {
+      _isCheckingUpdate = false;
+      if (!_isDisposing) notifyListeners();
+    }
+  }
+
   void setDownloadMethod(DownloadMethod method) {
     if (_downloadMethod == method) return;
     _downloadMethod = method;
@@ -584,6 +660,14 @@ class AppState extends ChangeNotifier {
           preferences.getString('translation.deviceId') ??
           _newTranslationDeviceId();
       await preferences.setString('translation.deviceId', _translationDeviceId);
+      _autoCheckUpdates = preferences.getBool('update.autoCheck') ?? true;
+      final savedIgnoredVersion = preferences.getString(
+        'update.ignoredVersion',
+      );
+      _ignoredUpdateVersion =
+          savedIgnoredVersion != null && savedIgnoredVersion.isNotEmpty
+          ? savedIgnoredVersion
+          : null;
       try {
         _shizukuStatus = await host.shizukuStatus();
       } catch (error) {
@@ -657,6 +741,15 @@ class AppState extends ChangeNotifier {
       await preferences.remove('source.homeId');
     } else {
       await preferences.setString('source.homeId', selectedHomeSourceId);
+    }
+    await preferences.setBool('update.autoCheck', _autoCheckUpdates);
+    if (_ignoredUpdateVersion == null || _ignoredUpdateVersion!.isEmpty) {
+      await preferences.remove('update.ignoredVersion');
+    } else {
+      await preferences.setString(
+        'update.ignoredVersion',
+        _ignoredUpdateVersion!,
+      );
     }
   }
 

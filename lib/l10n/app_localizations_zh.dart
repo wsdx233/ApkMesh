@@ -1470,4 +1470,77 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get languageEnglish => 'English';
+
+  @override
+  String get autoCheckUpdates => '自动检查更新';
+
+  @override
+  String get autoCheckUpdatesSummary => '应用启动时自动检查新版本';
+
+  @override
+  String get checkForUpdates => '检查更新';
+
+  @override
+  String get checkingForUpdates => '正在检查更新...';
+
+  @override
+  String alreadyLatestVersion(String version) {
+    return '当前已是最新版本 ($version)';
+  }
+
+  @override
+  String updateCheckFailed(String error) {
+    return '检查更新失败: $error';
+  }
+
+  @override
+  String get newVersionAvailable => '发现新版本';
+
+  @override
+  String currentVersionLabel(String version) {
+    return '当前版本: $version';
+  }
+
+  @override
+  String latestVersionLabel(String version) {
+    return '最新版本: $version';
+  }
+
+  @override
+  String get releaseNotes => '更新日志';
+
+  @override
+  String get noReleaseNotes => '暂无更新说明';
+
+  @override
+  String get updateAction => '更新';
+
+  @override
+  String get dontRemindAgain => '不再提醒';
+
+  @override
+  String downloadingUpdate(String percent) {
+    return '正在下载更新: $percent%';
+  }
+
+  @override
+  String downloadUpdateFailed(String error) {
+    return '更新下载失败: $error';
+  }
+
+  @override
+  String get downloadCompleteInstalling => '下载完成，正在准备安装...';
+
+  @override
+  String get openInBrowser => '在浏览器中打开';
+
+  @override
+  String ignoredVersionHint(String version) {
+    return '已忽略版本: $version · 点击恢复提醒';
+  }
+
+  @override
+  String ignoredVersionRestored(String version) {
+    return '已恢复 $version 的更新提醒';
+  }
 }

@@ -1523,4 +1523,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageEnglish => 'English';
+
+  @override
+  String get autoCheckUpdates => 'Auto check for updates';
+
+  @override
+  String get autoCheckUpdatesSummary =>
+      'Automatically check for new versions on launch';
+
+  @override
+  String get checkForUpdates => 'Check for updates';
+
+  @override
+  String get checkingForUpdates => 'Checking for updates...';
+
+  @override
+  String alreadyLatestVersion(String version) {
+    return 'Already the latest version ($version)';
+  }
+
+  @override
+  String updateCheckFailed(String error) {
+    return 'Check for updates failed: $error';
+  }
+
+  @override
+  String get newVersionAvailable => 'New Version Available';
+
+  @override
+  String currentVersionLabel(String version) {
+    return 'Current version: $version';
+  }
+
+  @override
+  String latestVersionLabel(String version) {
+    return 'Latest version: $version';
+  }
+
+  @override
+  String get releaseNotes => 'Release Notes';
+
+  @override
+  String get noReleaseNotes => 'No release notes provided';
+
+  @override
+  String get updateAction => 'Update';
+
+  @override
+  String get dontRemindAgain => 'Don\'t remind again';
+
+  @override
+  String downloadingUpdate(String percent) {
+    return 'Downloading update: $percent%';
+  }
+
+  @override
+  String downloadUpdateFailed(String error) {
+    return 'Update download failed: $error';
+  }
+
+  @override
+  String get downloadCompleteInstalling =>
+      'Download complete, opening installer...';
+
+  @override
+  String get openInBrowser => 'Open in browser';
+
+  @override
+  String ignoredVersionHint(String version) {
+    return 'Ignored version: $version · Tap to restore';
+  }
+
+  @override
+  String ignoredVersionRestored(String version) {
+    return 'Update reminders restored for $version';
+  }
 }

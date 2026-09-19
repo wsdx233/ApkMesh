@@ -2604,6 +2604,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'English'**
   String get languageEnglish;
+
+  /// No description provided for @autoCheckUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto check for updates'**
+  String get autoCheckUpdates;
+
+  /// No description provided for @autoCheckUpdatesSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically check for new versions on launch'**
+  String get autoCheckUpdatesSummary;
+
+  /// No description provided for @checkForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get checkForUpdates;
+
+  /// No description provided for @checkingForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking for updates...'**
+  String get checkingForUpdates;
+
+  /// No description provided for @alreadyLatestVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Already the latest version ({version})'**
+  String alreadyLatestVersion(String version);
+
+  /// No description provided for @updateCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates failed: {error}'**
+  String updateCheckFailed(String error);
+
+  /// No description provided for @newVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New Version Available'**
+  String get newVersionAvailable;
+
+  /// No description provided for @currentVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current version: {version}'**
+  String currentVersionLabel(String version);
+
+  /// No description provided for @latestVersionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest version: {version}'**
+  String latestVersionLabel(String version);
+
+  /// No description provided for @releaseNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Release Notes'**
+  String get releaseNotes;
+
+  /// No description provided for @noReleaseNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'No release notes provided'**
+  String get noReleaseNotes;
+
+  /// No description provided for @updateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get updateAction;
+
+  /// No description provided for @dontRemindAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'\'t remind again'**
+  String get dontRemindAgain;
+
+  /// No description provided for @downloadingUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading update: {percent}%'**
+  String downloadingUpdate(String percent);
+
+  /// No description provided for @downloadUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update download failed: {error}'**
+  String downloadUpdateFailed(String error);
+
+  /// No description provided for @downloadCompleteInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Download complete, opening installer...'**
+  String get downloadCompleteInstalling;
+
+  /// No description provided for @openInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser'**
+  String get openInBrowser;
+
+  /// No description provided for @ignoredVersionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored version: {version} · Tap to restore'**
+  String ignoredVersionHint(String version);
+
+  /// No description provided for @ignoredVersionRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Update reminders restored for {version}'**
+  String ignoredVersionRestored(String version);
 }
 
 class _AppLocalizationsDelegate

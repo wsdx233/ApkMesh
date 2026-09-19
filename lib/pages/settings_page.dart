@@ -10,6 +10,7 @@ import '../core/app_state.dart';
 import '../core/models.dart';
 import '../core/translation_service.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/update_settings_tile.dart';
 
 const _settingsTilePadding = EdgeInsets.symmetric(horizontal: 16);
 const _settingsControlWidth = 152.0;
@@ -223,6 +224,8 @@ class SettingsPage extends StatelessWidget {
                   trailing: const Icon(Icons.open_in_new),
                   onTap: () => _openGitHubRepository(context),
                 ),
+                const Divider(),
+                UpdateSettingsSection(state: state),
                 const Divider(),
                 _InformationSettingsTile(
                   icon: Icons.info_outline,

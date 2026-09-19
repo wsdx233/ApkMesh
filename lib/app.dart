@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'core/app_language.dart';
 import 'core/app_state.dart';
+import 'core/app_update.dart';
 import 'core/models.dart';
 import 'l10n/app_localizations.dart';
 import 'pages/debug_sheet.dart';
@@ -14,6 +15,7 @@ import 'pages/home_page.dart';
 import 'pages/library_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/sources_page.dart';
+import 'widgets/update_dialog.dart';
 
 class ApkMeshApp extends StatefulWidget {
   const ApkMeshApp({super.key});
@@ -112,9 +114,43 @@ class _ShellState extends State<Shell> {
   bool pageJumpAvailable = false;
   final searchController = TextEditingController();
   final homeKey = GlobalKey<HomePageState>();
+  Timer? _updateCheckTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scheduleUpdateCheck();
+    });
+  }
+
+  void _scheduleUpdateCheck() {
+    _updateCheckTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+      _checkUpdateOnLaunch();
+    });
+  }
+
+  Future<void> _checkUpdateOnLaunch() async {
+    try {
+      final release = await widget.state.checkForUpdates(manual: false);
+      if (!mounted || release == null) return;
+      if (release.hasUpdate(AppVersion.current)) {
+        await showUpdateDialog(
+          context,
+          state: widget.state,
+          release: release,
+          isManual: false,
+        );
+      }
+    } catch (_) {
+      // Auto update check on launch fails silently
+    }
+  }
 
   @override
   void dispose() {
+    _updateCheckTimer?.cancel();
     searchController.dispose();
     super.dispose();
   }
