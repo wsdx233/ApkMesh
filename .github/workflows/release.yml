@@ -1,0 +1,57 @@
+name: Build and publish Android release
+
+on:
+  push:
+    tags:
+      - '**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build APK and create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Prepare release asset
+        id: asset
+        shell: bash
+        run: |
+          asset_name="apk-mesh-${GITHUB_REF_NAME//\//-}.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "$asset_name"
+          echo "path=$asset_name" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: APK Mesh ${{ github.ref_name }}
+          generate_release_notes: true
+          files: ${{ steps.asset.outputs.path }}

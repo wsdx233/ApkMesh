@@ -65,6 +65,19 @@ flutter run
 flutter test
 ```
 
+### Tag 发布 Android APK
+
+将任意 Git tag 推送到 GitHub 后，`.github/workflows/release.yml` 会自动执行 Flutter Android release 构建，并创建对应的 GitHub Release：
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+工作流会上传 `apk-mesh-<tag>.apk`，并通过 GitHub 的自动生成能力按提交和 Pull Request 整理 Release notes。仓库的 Actions 设置需要允许 `GITHUB_TOKEN` 写入 Releases；工作流已声明 `contents: write` 权限。
+
+当前 Android release 构建沿用 `android/app/build.gradle.kts` 中的签名配置；在配置正式签名密钥前，产物使用项目现有的 debug signing 配置，不适合作为正式覆盖升级包。
+
 ### Python 源调试器
 
 项目包含一个功能完整的 Python 调试器，位于 `tools/source_debugger/` 目录，专为源脚本开发者设计。
