@@ -1,0 +1,18 @@
+{
+  "id": "apkcube",
+  "name": "APKCube",
+  "version": "1.0.0",
+  "homepage": "https://apkcube.com/",
+  "description": "读取 APKCube 公开搜索、详情、截图和 APK 下载项。",
+  "permissions": {
+    "network": ["apkcube.com", "www.apkcube.com", "icons.apkcube.com", "play-lh.googleusercontent.com"],
+    "browser": false,
+    "download": true,
+    "install": false
+  },
+  "capabilities": {"catalog": false, "detailProgress": true, "packageLookup": true},
+  "debugProjects": [
+    {"id": "search-keyword", "name": "搜索关键词", "description": "检查 APKCube 搜索与分页结果。", "inputLabel": "关键词", "placeholder": "例如 chatgpt", "defaultInput": "chatgpt"},
+    {"id": "app-details", "name": "获取应用详情", "description": "读取元数据、截图和公开 APK 下载项。", "inputLabel": "详情 URL", "placeholder": "粘贴 apkcube.com 详情 URL", "defaultInput": "https://apkcube.com/chatgpt/com.openai.chatgpt"}
+  ]
+}

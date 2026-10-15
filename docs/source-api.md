@@ -47,6 +47,8 @@ globalThis.source = {
 
 源可以额外实现分阶段详情接口：`detailsMetadata(idOrUrl)` 返回不包含最终下载直链的详情主体，并在 `downloadCandidates` 中返回待解析的下载候选项；`resolveDownloads(candidates, requestId)` 解析这些候选项。解析过程中可调用 `apkmesh.detailProgress(requestId, update)`，其中 `update` 包含候选项 `index`，以及 `download` 或 `downloads`（一个候选项可以产生多个最终文件），失败时包含 `error`。宿主会按候选项顺序逐项更新 UI；只有拿到最终下载对象后才会显示可下载操作，实际下载时仍执行源权限校验。未实现这两个可选接口的源继续使用一次性 `details()`。
 
+`downloadCandidates` 中会跨 Flutter 消息桥保留的字段仅有 `label`、`url`、`size` 和可选 `headers`。解析器必须能从这些字段恢复所需信息，不能依赖候选项中的自定义字段。
+
 ## 可选主页目录接口
 
 ```js

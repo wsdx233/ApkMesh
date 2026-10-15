@@ -10,7 +10,7 @@
 
 APK Mesh 是一个跨平台的 APK 源聚合客户端。它采用去中心化的源脚本架构，源脚本使用 JavaScript (QuickJS) 编写。宿主应用为这些脚本提供受控的隐藏浏览器自动化、网络抓取、文件下载以及应用安装能力，从而实现多源 APK 资源的统一检索与管理。
 
-当前版本提供主页分类、聚合搜索、下载管理、源管理以及应用设置等核心功能。在 Android 平台上，系统会自动扫描并加载 `assets/sources/` 目录下的内置源脚本（如 APKVision、APKMirror、APKTodo 等）。
+当前版本提供主页分类、聚合搜索、下载管理、源管理以及应用设置等核心功能。在 Android 平台上，系统会自动扫描并加载 `assets/sources/` 目录下的内置源脚本（如 APKVision、APKMirror、APKTodo、APKCube 等）。
 
 ## 核心特性
 
@@ -19,6 +19,12 @@ APK Mesh 是一个跨平台的 APK 源聚合客户端。它采用去中心化的
 * **高级安装机制**：在 Android 平台上，支持调用系统默认安装器，同时支持配置 Shizuku 实现无 root 权限的静默安装。
 * **灵活的源管理**：支持从 HTTPS URL 远程导入 `.js` 源文件，或通过系统文件选择器导入独立的 `.js` 及打包的 `.zip` 源脚本。
 * **独立开发者工具**：配套提供完全独立的 Python CLI 调试器，无需 Android 环境即可在桌面端进行源脚本的开发、录制、回放与 Trace 调试。
+
+### APKCube
+
+内置 `apkcube.com` 源支持关键词搜索、分页、精确包名定位、详情和截图。下载按站点公开 API 的构建列表、token 和 POST 请求流程解析，不开启浏览器或安装权限；网络权限限于 APKCube 主站及已观察到的图片主机。
+
+2026-10-14 验证中，公开搜索与元数据可读取，但真实下载请求被站点以 HTTP 403 / `FIREWALL_BLOCKED` 拒绝。源会显示该错误，不把下载页面伪装为 APK，也不绕过站点验证。尚未证实的 CDN 或无扩展名下载 URL 会被拒绝。已审阅的离线回放位于 `tools/source_debugger/examples/fixtures/apkcube/`，保留真实失败并移除了有效 token、Cookie 和 APK 内容。
 
 ## 界面语言
 

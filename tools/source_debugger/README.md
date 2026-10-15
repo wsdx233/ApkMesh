@@ -103,7 +103,21 @@ uv run apkmesh-debug --mode replay --fixture-dir fixtures/example \
   ../../assets/sources/example.js search demo
 ```
 
-源专属的测试代码和录制 fixture 放在 `tests/sources/<source>/` 下，该目录仅用于本地调试，并由 `.gitignore` 忽略。通用宿主测试留在 `tests/` 根目录；添加新源测试时，只在对应源目录调用该源声明的 `debug()` 项目。
+### APKCube 已审阅回放
+
+`examples/fixtures/apkcube/` 保存 2026-10-14 观察到的公开搜索、精确包名跳转、详情和下载 API 响应的精简版本。真实 token 已替换为明确无效的离线值，未包含 Cookie、账号数据或 APK。
+
+```bash
+uv run apkmesh-debug --mode replay --fixture-dir examples/fixtures/apkcube \
+  ../../assets/sources/apkcube.js search chatgpt
+uv run apkmesh-debug --mode replay --fixture-dir examples/fixtures/apkcube \
+  ../../assets/sources/apkcube.js details https://apkcube.com/chatgpt/com.openai.chatgpt
+```
+
+第二条命令预期明确报告 HTTP 403：真实下载请求被站点以 `FIREWALL_BLOCKED` 拒绝，回放保留该失败而不是伪造下载成功。`package-search` 也会读取完整详情并解析下载，因此会遇到同一拒绝。元数据与候选项跨 Flutter 字段裁剪后的解析、POST 载荷和错误传播由 `tests/test_apkcube.py` 覆盖。源只接受已证实主机上的 APK/APKS/XAPK/ZIP 直链；未观察到的 CDN 和无扩展名链接不会被推测为可用下载。
+
+
+临时的源专属测试和录制放在 `tests/sources/<source>/` 下，该目录由 `.gitignore` 忽略。通用宿主测试以及明确纳入版本控制、采用已审阅离线 fixture 的源契约回归（如 APKCube）放在 `tests/` 根目录；后者的 fixture 放在 `examples/fixtures/`，不得依赖实时第三方网络。
 
 ## 测试
 
@@ -111,4 +125,4 @@ uv run apkmesh-debug --mode replay --fixture-dir fixtures/example \
 uv run pytest tests --ignore=tests/sources
 ```
 
-该命令只运行通用宿主和运行时测试。源专属测试需要显式运行 `uv run pytest tests/sources/<source>`，其 fixture 不会自动创建。需要完全断网执行时，必须显式使用 `--mode replay`；回放中未登记的 URL 会失败，不会访问网络。正式调试第三方源前，应确认自己有权访问相关站点，并遵守站点条款。
+该命令运行通用宿主、运行时及已审阅的离线源契约回归。临时源专属测试需要显式运行 `uv run pytest tests/sources/<source>`，其 fixture 不会自动创建。需要完全断网执行时，必须显式使用 `--mode replay`；回放中未登记的 URL 会失败，不会访问网络。正式调试第三方源前，应确认自己有权访问相关站点，并遵守站点条款。
