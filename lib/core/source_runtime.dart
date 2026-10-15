@@ -59,6 +59,8 @@ abstract interface class SourceHostApi {
   Future<String> request(
     String url, {
     Map<String, String> headers = const {},
+    String method = 'GET',
+    String? body,
     required SourcePolicy policy,
   });
 
@@ -803,6 +805,8 @@ class DemoHostApi implements SourceHostApi {
   Future<String> request(
     String url, {
     Map<String, String> headers = const {},
+    String method = 'GET',
+    String? body,
     required SourcePolicy policy,
   }) => throw UnsupportedError('当前平台不支持源网络请求');
 

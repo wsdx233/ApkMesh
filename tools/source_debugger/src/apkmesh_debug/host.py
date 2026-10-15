@@ -53,6 +53,8 @@ class SourceHost:
             return self.request(
                 str(payload.get("url", "")),
                 headers=self._string_map(payload.get("headers")),
+                method=str(payload.get("method", "GET")),
+                body=None if payload.get("body") is None else str(payload.get("body")),
             )
         if name == "apkmesh.browser.open":
             return self.browser.open(str(payload.get("url", "")))
@@ -92,8 +94,15 @@ class SourceHost:
             return True
         raise UnsupportedHostOperation(f"unknown host message: {name}")
 
-    def request(self, url: str, *, headers: dict[str, str] | None = None) -> str:
-        return self.http.request(url, headers=headers)
+    def request(
+        self,
+        url: str,
+        *,
+        headers: dict[str, str] | None = None,
+        method: str = "GET",
+        body: str | None = None,
+    ) -> str:
+        return self.http.request(url, headers=headers, method=method, body=body)
 
     def download(
         self,

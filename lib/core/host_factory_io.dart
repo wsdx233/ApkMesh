@@ -121,9 +121,15 @@ class NativeHostApi implements SourceHostApi, SourceHostConcurrencyApi {
   Future<String> request(
     String url, {
     Map<String, String> headers = const {},
+    String method = 'GET',
+    String? body,
     required SourcePolicy policy,
   }) => _httpRequests.withPermit(() async {
-    final requestId = _debug?.beginRequest(url, headers: headers);
+    final requestId = _debug?.beginRequest(
+      url,
+      method: method,
+      headers: headers,
+    );
     var requestRecorded = false;
     _log('HTTP $url', category: 'HTTP');
     try {
@@ -131,8 +137,10 @@ class NativeHostApi implements SourceHostApi, SourceHostConcurrencyApi {
         Uri.parse(url),
         policy,
         headers: headers,
+        method: method,
+        body: body,
       );
-      final body = await response.stream.bytesToString();
+      final responseBody = await response.stream.bytesToString();
       if (response.statusCode >= 400) {
         if (requestId != null) {
           _debug?.failRequest(
@@ -140,7 +148,7 @@ class NativeHostApi implements SourceHostApi, SourceHostConcurrencyApi {
             'HTTP ${response.statusCode}',
             statusCode: response.statusCode,
             responseHeaders: response.headers,
-            responseBody: body,
+            responseBody: responseBody,
           );
         }
         requestRecorded = true;
@@ -151,12 +159,12 @@ class NativeHostApi implements SourceHostApi, SourceHostConcurrencyApi {
           requestId,
           statusCode: response.statusCode,
           responseHeaders: response.headers,
-          responseBody: body,
+          responseBody: responseBody,
         );
         requestRecorded = true;
       }
       _log('HTTP $url -> ${response.statusCode}', category: 'HTTP');
-      return body;
+      return responseBody;
     } catch (error) {
       if (requestId != null && !requestRecorded) {
         _debug?.failRequest(requestId, error);
@@ -194,28 +202,63 @@ class NativeHostApi implements SourceHostApi, SourceHostConcurrencyApi {
     Uri initialUri,
     SourcePolicy policy, {
     Map<String, String> headers = const {},
+    String method = 'GET',
+    String? body,
   }) async {
+    var normalizedMethod = method.trim().toUpperCase();
+    if (normalizedMethod != 'GET' && normalizedMethod != 'POST') {
+      throw ArgumentError.value(method, 'method', '仅支持 GET 或 POST');
+    }
     var uri = initialUri;
-    for (var redirects = 0; redirects < 6; redirects++) {
+    var currentHeaders = <String, String>{...headers};
+    var currentBody = body;
+    for (var redirects = 0; redirects < 7; redirects++) {
       _check(uri, policy, capability: true);
-      final requestHeaders = <String, String>{...headers};
-      if (!headers.keys.any((key) => key.toLowerCase() == 'cookie')) {
+      final requestHeaders = <String, String>{...currentHeaders};
+      if (!currentHeaders.keys.any((key) => key.toLowerCase() == 'cookie')) {
         final cookies = _cookieHeader(uri);
         if (cookies != null) requestHeaders['Cookie'] = cookies;
       }
-      final request = http.Request('GET', uri)
+      final request = http.Request(normalizedMethod, uri)
         ..followRedirects = false
         ..headers.addAll(requestHeaders);
+      if (currentBody != null) request.body = currentBody;
       final response = await _client
           .send(request)
           .timeout(const Duration(seconds: 15));
-      if (response.statusCode < 300 || response.statusCode >= 400) {
+      if (!const {301, 302, 303, 307, 308}.contains(response.statusCode)) {
         return response;
       }
       await response.stream.drain<void>();
       final location = response.headers['location'];
       if (location == null) throw HttpException('重定向缺少 Location', uri: uri);
-      uri = uri.resolve(location);
+      final nextUri = uri.resolve(location);
+      if (response.statusCode == 303 ||
+          ((response.statusCode == 301 || response.statusCode == 302) &&
+              normalizedMethod == 'POST')) {
+        normalizedMethod = 'GET';
+        currentBody = null;
+        currentHeaders.removeWhere(
+          (key, _) => const {
+            'content-type',
+            'content-length',
+            'transfer-encoding',
+          }.contains(key.toLowerCase()),
+        );
+      }
+      if (uri.scheme != nextUri.scheme ||
+          uri.host != nextUri.host ||
+          uri.port != nextUri.port) {
+        currentHeaders.removeWhere(
+          (key, _) => const {
+            'authorization',
+            'proxy-authorization',
+            'cookie',
+            'host',
+          }.contains(key.toLowerCase()),
+        );
+      }
+      uri = nextUri;
     }
     throw HttpException('重定向次数过多', uri: uri);
   }

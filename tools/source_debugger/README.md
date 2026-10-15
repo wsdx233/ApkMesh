@@ -5,7 +5,7 @@
 它实现了当前 Source API 的主要宿主能力：
 
 - QuickJS 执行源脚本；
-- `apkmesh.request()` 和手动白名单重定向；
+- `apkmesh.request()` 的 GET/POST、字符串请求体和逐跳白名单重定向（301/302/303 将 POST 转为 GET；307/308 保留方法和请求体；跨 origin 移除显式凭据）；
 - Playwright 无头 Chromium 作为浏览器宿主；
 - `waitFor`、`waitForUrlChange`、`query`、`queryAll` 的 CSS/属性查询契约；
 - 独立目录保存下载文件；

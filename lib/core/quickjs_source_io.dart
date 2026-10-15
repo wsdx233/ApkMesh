@@ -206,6 +206,8 @@ class QuickJsApkSourceScript
       final body = await _host!.request(
         payload['url'] as String,
         headers: _stringMap(payload['headers']),
+        method: payload['method']?.toString() ?? 'GET',
+        body: payload['body']?.toString(),
         policy: _policy,
       );
       return body;
@@ -311,7 +313,7 @@ class QuickJsApkSourceScript
     final runtime = _runtime ?? (throw StateError('QuickJS 运行时未激活'));
     final bootstrap = '''
       globalThis.apkmesh = {
-        request: (url, options = {}) => sendMessage('apkmesh.request', JSON.stringify({url, headers: options.headers || {}})),
+        request: (url, options = {}) => sendMessage('apkmesh.request', JSON.stringify({url, headers: options.headers || {}, method: options.method || 'GET', body: options.body === undefined ? null : String(options.body)})),
         browser: {
           open: async (url) => {
             const tabId = await sendMessage('apkmesh.browser.open', JSON.stringify({url}));

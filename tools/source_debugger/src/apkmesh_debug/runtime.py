@@ -14,10 +14,18 @@ from .trace import TraceRecorder
 
 _BOOTSTRAP = r"""
 globalThis.apkmesh = {
-  request: (url, options = {}) => sendMessage(
-    'apkmesh.request',
-    JSON.stringify({url, headers: options.headers || {}})
-  ),
+  request: async (url, options = {}) => {
+    const response = await sendMessage('apkmesh.request', JSON.stringify({
+      url,
+      headers: options.headers || {},
+      method: options.method || 'GET',
+      body: options.body === undefined ? null : String(options.body),
+    }));
+    if (response && typeof response === 'object' && response.__apkmeshRequestError) {
+      throw new Error(response.__apkmeshRequestError);
+    }
+    return response;
+  },
   browser: {
     open: async (url) => {
       const tabId = await sendMessage(
@@ -129,7 +137,7 @@ class SourceRuntime:
               }}
               globalThis.__apkmesh_result = await source[{method_json}]({encoded_arguments});
             }} catch (error) {{
-              globalThis.__apkmesh_error = String(error && (error.stack || error));
+              globalThis.__apkmesh_error = String(error) + (error && error.stack ? '\\n' + error.stack : '');
             }} finally {{
               globalThis.__apkmesh_done = true;
             }}
@@ -168,6 +176,8 @@ class SourceRuntime:
             return as_json_value(result, self.context.parse_json)
         except Exception as error:
             self.trace.add("host.error", message=name, error=str(error))
+            if name == "apkmesh.request":
+                return self.context.parse_json(json.dumps({"__apkmeshRequestError": str(error)}))
             raise
 
     def _eval_json(self, expression: str) -> Any:

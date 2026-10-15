@@ -116,7 +116,7 @@ async debug(projectId, input) {
 
 ## 宿主能力
 
-- `apkmesh.request(url, options)`：受 manifest 网络权限限制的 HTTP 请求；`network: ['*']` 可显式允许任意 `http/https` 主机。
+- `apkmesh.request(url, options)`：返回响应文本的 HTTP 请求，受 manifest 网络权限限制；`options.headers` 为请求头，`options.method` 默认为 `GET`，也支持 `POST`，其他方法会拒绝。`options.body` 为可选字符串（JSON 需自行 `JSON.stringify()` 并设置 `Content-Type`）。`network: ['*']` 可显式允许任意 `http/https` 主机。每次重定向重新检查权限，最多跟随 6 次；POST 遇到 301/302/303 转为 GET 并移除请求体及实体头，307/308 保留方法和请求体；跨 origin 移除显式 Cookie、Authorization 和 Proxy-Authorization。Flutter 与 Python 宿主使用相同规则，失败会保留可观察的错误信息。
 - `apkmesh.browser.open(url)`：打开隔离的隐藏 WebView 标签页，支持 `waitFor`、`waitForUrlChange`、`query` 和 `queryAll`。`waitForUrlChange` 会等待页面导航或 WebView 下载事件产生不同 URL，并返回该 URL，适用于由页面 JavaScript 生成下载地址的站点。
 - `apkmesh.download(url, options)`：创建受 manifest 网络权限和下载权限约束的下载任务并返回本地文件路径。`options` 可包含 `fileName` 和额外 HTTP `headers`。
 - `apkmesh.install(filePath)`：源声明 `permissions.install: true` 后，可经用户确认调用系统安装器；源不能静默安装。Shizuku 安装只能由应用界面的“安装”按钮发起，源直接调用时不会获得 Shizuku 特权。Android 会在需要时先打开未知来源安装权限页面。
