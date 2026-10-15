@@ -10,6 +10,7 @@ import '../core/app_state.dart';
 import '../core/models.dart';
 import '../core/translation_service.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/installed_updates_section.dart';
 import '../widgets/update_settings_tile.dart';
 
 const _settingsTilePadding = EdgeInsets.symmetric(horizontal: 16);
@@ -172,6 +173,8 @@ class SettingsPage extends StatelessWidget {
                     AppLocalizations.of(context).downloadDirectoryExternal,
                   ],
                 ),
+                const Divider(),
+                InstalledAppUpdateSettingsTile(state: state),
                 const Divider(),
                 _SourceConcurrencySettingsTile(state: state),
                 const Divider(),

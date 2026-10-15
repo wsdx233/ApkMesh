@@ -866,6 +866,41 @@ class NativeHostApi implements SourceHostApi, SourceHostConcurrencyApi {
   }
 
   @override
+  Future<InstalledAppInfo?> inspectInstalledApp(String packageName) async {
+    if (!Platform.isAndroid) return null;
+    final normalized = packageName.trim();
+    if (normalized.isEmpty) return null;
+    final raw = await _installChannel.invokeMethod<dynamic>(
+      'inspectInstalledApp',
+      {'packageName': normalized},
+    );
+    if (raw is! Map) return null;
+    final installedPackage = _platformString(raw['packageName']);
+    if (installedPackage == null || installedPackage.isEmpty) return null;
+    return InstalledAppInfo(
+      packageName: installedPackage,
+      versionName: _platformString(raw['versionName']),
+      versionCode: _platformInt(raw['versionCode']),
+    );
+  }
+
+  @override
+  Future<List<InstalledAppInfo>> installedApps() async {
+    if (!Platform.isAndroid) return const [];
+    final raw = await _installChannel.invokeListMethod<dynamic>(
+      'installedApps',
+    );
+    return [
+      for (final item in raw ?? const <dynamic>[])
+        InstalledAppInfo(
+          packageName: item['packageName'] as String,
+          versionName: item['versionName'] as String?,
+          versionCode: item['versionCode'] as int?,
+        ),
+    ];
+  }
+
+  @override
   Future<bool> openInstalled(String packageName) async {
     if (!Platform.isAndroid) return false;
     return await _installChannel.invokeMethod<bool>('openInstalled', {

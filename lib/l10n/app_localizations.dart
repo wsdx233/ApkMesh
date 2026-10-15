@@ -2718,6 +2718,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update reminders restored for {version}'**
   String ignoredVersionRestored(String version);
+
+  /// No description provided for @installedAppsUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed app updates'**
+  String get installedAppsUpdates;
+
+  /// No description provided for @autoCheckInstalledApps.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically check installed apps'**
+  String get autoCheckInstalledApps;
+
+  /// No description provided for @installedAppsUpdateSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Checks enabled sources every 24 hours using package names or download history. Failed checks retry after 1 hour. Package names are sent to sources that support lookup; apps are never installed automatically.'**
+  String get installedAppsUpdateSummary;
+
+  /// No description provided for @installedUpdatesCheckNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Check installed apps now'**
+  String get installedUpdatesCheckNow;
+
+  /// No description provided for @installedUpdatesNotChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not checked yet'**
+  String get installedUpdatesNotChecked;
+
+  /// No description provided for @installedUpdatesAutomaticOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic checks are off'**
+  String get installedUpdatesAutomaticOff;
+
+  /// No description provided for @installedUpdatesChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking · {pending} remaining'**
+  String installedUpdatesChecking(int pending);
+
+  /// No description provided for @installedUpdatesResults.
+  ///
+  /// In en, this message translates to:
+  /// **'{available} updates available · {failed} checks failed'**
+  String installedUpdatesResults(int available, int failed);
 }
 
 class _AppLocalizationsDelegate

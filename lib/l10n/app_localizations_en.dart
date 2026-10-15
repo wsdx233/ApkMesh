@@ -1598,4 +1598,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String ignoredVersionRestored(String version) {
     return 'Update reminders restored for $version';
   }
+
+  @override
+  String get installedAppsUpdates => 'Installed app updates';
+
+  @override
+  String get autoCheckInstalledApps => 'Automatically check installed apps';
+
+  @override
+  String get installedAppsUpdateSummary =>
+      'Checks enabled sources every 24 hours using package names or download history. Failed checks retry after 1 hour. Package names are sent to sources that support lookup; apps are never installed automatically.';
+
+  @override
+  String get installedUpdatesCheckNow => 'Check installed apps now';
+
+  @override
+  String get installedUpdatesNotChecked => 'Not checked yet';
+
+  @override
+  String get installedUpdatesAutomaticOff => 'Automatic checks are off';
+
+  @override
+  String installedUpdatesChecking(int pending) {
+    return 'Checking · $pending remaining';
+  }
+
+  @override
+  String installedUpdatesResults(int available, int failed) {
+    return '$available updates available · $failed checks failed';
+  }
 }

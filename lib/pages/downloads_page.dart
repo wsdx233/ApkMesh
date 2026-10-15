@@ -8,6 +8,7 @@ import '../l10n/app_localizations.dart';
 import '../widgets/app_icon.dart';
 import '../widgets/app_result_tile.dart';
 import '../widgets/empty_message.dart';
+import '../widgets/installed_updates_section.dart';
 
 enum _DownloadBulkAction {
   selectAll,
@@ -72,6 +73,16 @@ class _DownloadsPageState extends State<DownloadsPage> {
           child: _buildHeader(context, tasks, completedCount),
         ),
         const SizedBox(height: 20),
+        if (state.host.supportsInstall) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: InstalledAppUpdatesSection(
+              state: state,
+              onOpenDetails: widget.onOpenDetails,
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
         if (tasks.isEmpty)
           EmptyMessage(
             icon: Icons.download_done_outlined,

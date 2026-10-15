@@ -70,6 +70,36 @@ class ApkInstallInfo {
   final String? error;
 }
 
+class InstalledAppInfo {
+  const InstalledAppInfo({
+    required this.packageName,
+    this.versionName,
+    this.versionCode,
+  });
+
+  final String packageName;
+  final String? versionName;
+  final int? versionCode;
+
+  Map<String, dynamic> toJson() => {
+    'packageName': packageName,
+    'versionName': versionName,
+    'versionCode': versionCode,
+  };
+
+  factory InstalledAppInfo.fromJson(Map<String, dynamic> json) {
+    final packageName = (json['packageName'] ?? '').toString().trim();
+    if (packageName.isEmpty) {
+      throw const FormatException('已安装应用包名为空');
+    }
+    return InstalledAppInfo(
+      packageName: packageName,
+      versionName: _nullableJsonString(json['versionName']),
+      versionCode: _jsonInt(json['versionCode']),
+    );
+  }
+}
+
 enum SourceStatus { enabled, disabled, error }
 
 class ApkSource {
@@ -267,6 +297,84 @@ class AppListing {
     rating: (json['rating'] ?? '').toString(),
     author: (json['author'] ?? '').toString(),
   );
+}
+
+enum InstalledAppUpdateStatus {
+  upToDate,
+  available,
+  notInstalled,
+  notFound,
+  failed,
+}
+
+class InstalledAppUpdateRecord {
+  const InstalledAppUpdateRecord({
+    required this.key,
+    required this.sourceId,
+    required this.appId,
+    required this.status,
+    required this.checkedAt,
+    this.packageName = '',
+    this.installed,
+    this.latest,
+    this.error,
+    this.nextRetryAt,
+  });
+
+  final String key;
+  final String sourceId;
+  final String appId;
+  final String packageName;
+  final InstalledAppUpdateStatus status;
+  final InstalledAppInfo? installed;
+  final AppListing? latest;
+  final DateTime checkedAt;
+  final String? error;
+  final DateTime? nextRetryAt;
+
+  bool get isAvailable =>
+      status == InstalledAppUpdateStatus.available && latest != null;
+
+  Map<String, dynamic> toJson() => {
+    'key': key,
+    'sourceId': sourceId,
+    'appId': appId,
+    'packageName': packageName,
+    'status': status.name,
+    'installed': installed?.toJson(),
+    'latest': latest?.toJson(),
+    'checkedAt': checkedAt.toIso8601String(),
+    'error': error,
+    'nextRetryAt': nextRetryAt?.toIso8601String(),
+  };
+
+  factory InstalledAppUpdateRecord.fromJson(Map<String, dynamic> json) {
+    final statusName = json['status'];
+    final status = InstalledAppUpdateStatus.values
+        .cast<InstalledAppUpdateStatus?>()
+        .firstWhere((value) => value?.name == statusName, orElse: () => null);
+    final checkedAt = DateTime.tryParse((json['checkedAt'] ?? '').toString());
+    if (status == null || checkedAt == null) {
+      throw const FormatException('应用更新缓存状态无效');
+    }
+    final rawInstalled = json['installed'];
+    return InstalledAppUpdateRecord(
+      key: _requiredJsonString(json, 'key'),
+      sourceId: _requiredJsonString(json, 'sourceId'),
+      appId: _requiredJsonString(json, 'appId'),
+      packageName: (json['packageName'] ?? '').toString(),
+      status: status,
+      installed: rawInstalled is Map
+          ? InstalledAppInfo.fromJson(Map<String, dynamic>.from(rawInstalled))
+          : null,
+      latest: _optionalAppListing(json['latest']),
+      checkedAt: checkedAt,
+      error: _nullableJsonString(json['error']),
+      nextRetryAt: json['nextRetryAt'] == null
+          ? null
+          : DateTime.tryParse(json['nextRetryAt'].toString()),
+    );
+  }
 }
 
 class SourceDebugProject {

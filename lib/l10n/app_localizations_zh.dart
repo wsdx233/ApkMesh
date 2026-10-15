@@ -1543,4 +1543,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String ignoredVersionRestored(String version) {
     return '已恢复 $version 的更新提醒';
   }
+
+  @override
+  String get installedAppsUpdates => '已安装应用更新';
+
+  @override
+  String get autoCheckInstalledApps => '自动检测已安装应用更新';
+
+  @override
+  String get installedAppsUpdateSummary =>
+      '每 24 小时通过包名或下载记录匹配已启用源，失败 1 小时后重试。检查会向支持包名查询的源发送包名，不会自动安装应用。';
+
+  @override
+  String get installedUpdatesCheckNow => '立即检查已安装应用更新';
+
+  @override
+  String get installedUpdatesNotChecked => '尚未检查';
+
+  @override
+  String get installedUpdatesAutomaticOff => '自动检测已关闭';
+
+  @override
+  String installedUpdatesChecking(int pending) {
+    return '正在检查 · 剩余 $pending 项';
+  }
+
+  @override
+  String installedUpdatesResults(int available, int failed) {
+    return '发现 $available 项更新 · $failed 项检查失败';
+  }
 }

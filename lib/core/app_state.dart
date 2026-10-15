@@ -14,6 +14,8 @@ import 'download_notifications.dart';
 import 'download_store.dart';
 import 'external_download_launcher.dart' as external_download;
 import 'host_factory.dart';
+import 'installed_app_updates.dart';
+import 'installed_update_store.dart';
 import 'models.dart';
 import 'quickjs_source.dart';
 import 'source_import.dart';
@@ -24,9 +26,13 @@ String _newTranslationDeviceId() =>
     'apkmesh-${DateTime.now().microsecondsSinceEpoch}-${math.Random().nextInt(0x100000000)}';
 
 class AppState extends ChangeNotifier {
-  AppState({SourceHostApi? host, UpdateService? updateService})
-    : _hostOverride = host,
-      _updateService = updateService ?? UpdateService() {
+  AppState({
+    SourceHostApi? host,
+    UpdateService? updateService,
+    InstalledUpdateStore? installedUpdateStore,
+  }) : _hostOverride = host,
+       _installedUpdateStoreOverride = installedUpdateStore,
+       _updateService = updateService ?? UpdateService() {
     _sources = [
       ApkSource(
         id: 'apkvision-demo',
@@ -48,6 +54,7 @@ class AppState extends ChangeNotifier {
   }
 
   final SourceHostApi? _hostOverride;
+  final InstalledUpdateStore? _installedUpdateStoreOverride;
   late List<ApkSource> _sources;
   late List<ApkSource> _sourceView;
   final SourceRegistry registry = SourceRegistry(
@@ -59,6 +66,13 @@ class AppState extends ChangeNotifier {
   late final DownloadNotifications _downloadNotifications;
   final Completer<void> _ready = Completer<void>();
   final DownloadStore _downloadStore = createDownloadStore();
+
+  late final InstalledAppUpdateService _installedUpdates =
+      InstalledAppUpdateService(
+        host: host,
+        registry: registry,
+        store: _installedUpdateStoreOverride ?? createInstalledUpdateStore(),
+      )..addListener(_onInstalledUpdatesChanged);
   late final TranslationService translation = TranslationService(
     localizations: () => strings,
   );
@@ -105,6 +119,8 @@ class AppState extends ChangeNotifier {
   bool _isCheckingUpdate = false;
   AppReleaseInfo? _latestRelease;
   String? _lastUpdateCheckError;
+
+  bool _autoCheckInstalledAppUpdates = true;
   bool _isDisposing = false;
   bool _sourceRuntimeReady = false;
   String? _runtimeError;
@@ -122,6 +138,15 @@ class AppState extends ChangeNotifier {
   List<DownloadTask> get downloads => List.unmodifiable(_downloads);
   List<AppListing> get favorites => List.unmodifiable(_favorites);
   List<AppListing> get history => List.unmodifiable(_history);
+
+  List<InstalledAppUpdateRecord> get installedAppUpdates =>
+      _installedUpdates.updates;
+  bool get autoCheckInstalledAppUpdates => _autoCheckInstalledAppUpdates;
+  bool get isCheckingInstalledUpdates => _installedUpdates.isChecking;
+  DateTime? get lastInstalledUpdateCheck => _installedUpdates.lastCheckedAt;
+  String? get lastInstalledUpdateError => _installedUpdates.lastError;
+  int get pendingInstalledUpdateChecks => _installedUpdates.pendingCount;
+  int get failedInstalledUpdateChecks => _installedUpdates.failedCount;
   bool get sourceRuntimeReady => _sourceRuntimeReady;
   Future<void> get ready => _ready.future;
   String? get runtimeError => _runtimeError;
@@ -661,6 +686,8 @@ class AppState extends ChangeNotifier {
           _newTranslationDeviceId();
       await preferences.setString('translation.deviceId', _translationDeviceId);
       _autoCheckUpdates = preferences.getBool('update.autoCheck') ?? true;
+      _autoCheckInstalledAppUpdates =
+          preferences.getBool('installedUpdates.autoCheck') ?? true;
       final savedIgnoredVersion = preferences.getString(
         'update.ignoredVersion',
       );
@@ -743,6 +770,10 @@ class AppState extends ChangeNotifier {
       await preferences.setString('source.homeId', selectedHomeSourceId);
     }
     await preferences.setBool('update.autoCheck', _autoCheckUpdates);
+    await preferences.setBool(
+      'installedUpdates.autoCheck',
+      _autoCheckInstalledAppUpdates,
+    );
     if (_ignoredUpdateVersion == null || _ignoredUpdateVersion!.isEmpty) {
       await preferences.remove('update.ignoredVersion');
     } else {
@@ -889,6 +920,52 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  void _onInstalledUpdatesChanged() {
+    if (_isDisposing) return;
+    for (final update in _installedUpdates.updates) {
+      final latest = update.latest!;
+      final cached = _detailsCache[latest.sourceId]?[latest.id];
+      if (cached != null &&
+          cached.details.version.trim() != latest.version.trim()) {
+        _detailsCache[latest.sourceId]?.remove(latest.id);
+      }
+    }
+    notifyListeners();
+  }
+
+  void _configureInstalledUpdates() {
+    _installedUpdates.configure(
+      downloads: downloads,
+      enabledSourceIds: _sources
+          .where((source) => source.status == SourceStatus.enabled)
+          .map((source) => source.id)
+          .toSet(),
+      automatic: _autoCheckInstalledAppUpdates && host.supportsInstall,
+    );
+  }
+
+  Future<void> refreshInstalledAppUpdates({bool force = false}) async {
+    await _settingsReady;
+    await ready;
+    if (_isDisposing || !host.supportsInstall) return;
+    _configureInstalledUpdates();
+    await _installedUpdates.refresh(force: force, manual: force);
+  }
+
+  void setInstalledUpdateForeground(bool value) {
+    if (!_isDisposing) _installedUpdates.setForeground(value);
+  }
+
+  Future<void> setAutoCheckInstalledAppUpdates(bool value) async {
+    await _settingsReady;
+    if (_isDisposing || _autoCheckInstalledAppUpdates == value) return;
+    _autoCheckInstalledAppUpdates = value;
+    _configureInstalledUpdates();
+    notifyListeners();
+    await _persistSettings();
+    if (value) unawaited(refreshInstalledAppUpdates());
+  }
+
   void _scheduleDownloadPersistence({bool immediate = false}) {
     if (_isDisposing && !immediate) return;
     if (immediate) {
@@ -995,6 +1072,7 @@ class AppState extends ChangeNotifier {
     } finally {
       if (!_ready.isCompleted) _ready.complete();
       unawaited(_resumeRestoredDownloads());
+      unawaited(refreshInstalledAppUpdates());
     }
   }
 
@@ -1050,6 +1128,8 @@ class AppState extends ChangeNotifier {
 
     if (imported.isNotEmpty) {
       _refreshSourceView();
+      _configureInstalledUpdates();
+      unawaited(refreshInstalledAppUpdates());
       notifyListeners();
       debug.add(
         strings.sourcesImportedWithErrors(
@@ -1923,6 +2003,7 @@ class AppState extends ChangeNotifier {
         completedAt: DateTime.now(),
       );
       _replaceDownload(completed);
+      unawaited(refreshInstalledAppUpdates());
       debug.add(
         strings.downloadCompleted((task.file.label).toString()),
         category: 'Download',
@@ -2049,6 +2130,7 @@ class AppState extends ChangeNotifier {
     _installStateChecks.remove(id);
     _installingDownloads.remove(id);
     _downloads.removeAt(index);
+    unawaited(refreshInstalledAppUpdates());
     _scheduleDownloadPersistence();
     if (notify) notifyListeners();
   }
@@ -2068,7 +2150,10 @@ class AppState extends ChangeNotifier {
         policy: _policyForTask(current),
         userInitiated: true,
       );
-      if (installed) await refreshInstallState(current);
+      if (installed) {
+        await refreshInstallState(current);
+        unawaited(refreshInstalledAppUpdates());
+      }
       return installed;
     } finally {
       _installingDownloads.remove(current.id);
@@ -2121,6 +2206,8 @@ class AppState extends ChangeNotifier {
       _preferredHomeSourceId = null;
     }
     _refreshSourceView();
+    _configureInstalledUpdates();
+    unawaited(refreshInstalledAppUpdates());
     notifyListeners();
     unawaited(_persistSettings());
   }
@@ -2152,6 +2239,8 @@ class AppState extends ChangeNotifier {
           .firstOrNull;
       _preferredHomeSourceId = currentHome;
       _refreshSourceView();
+      _configureInstalledUpdates();
+      unawaited(refreshInstalledAppUpdates());
       notifyListeners();
       unawaited(_persistSettings());
     }
@@ -2168,6 +2257,8 @@ class AppState extends ChangeNotifier {
     _disabledSourceIds.remove(id);
     if (_preferredHomeSourceId == id) _preferredHomeSourceId = null;
     _refreshSourceView();
+    _configureInstalledUpdates();
+    unawaited(refreshInstalledAppUpdates());
     unawaited(registry.remove(id));
     notifyListeners();
     unawaited(_persistSettings());
@@ -2182,6 +2273,7 @@ class AppState extends ChangeNotifier {
   @override
   void dispose() {
     _isDisposing = true;
+    _installedUpdates.dispose();
     _downloadPersistenceTimer?.cancel();
     _downloadPersistenceTimer = null;
     if (_downloads.isNotEmpty) _persistDownloadsNow();

@@ -43,8 +43,12 @@ class _ApkMeshAppState extends State<ApkMeshApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
+    state.setInstalledUpdateForeground(
+      lifecycleState == AppLifecycleState.resumed,
+    );
     if (lifecycleState == AppLifecycleState.resumed) {
       unawaited(state.refreshInstallStates());
+      unawaited(state.refreshInstalledAppUpdates());
     }
   }
 

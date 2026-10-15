@@ -1295,4 +1295,15 @@
       }
     }
   }
+  ,
+  "installedAppsUpdates": "Installed app updates",
+  "autoCheckInstalledApps": "Automatically check installed apps",
+  "installedAppsUpdateSummary": "Checks enabled sources every 24 hours using package names or download history. Failed checks retry after 1 hour. Package names are sent to sources that support lookup; apps are never installed automatically.",
+  "installedUpdatesCheckNow": "Check installed apps now",
+  "installedUpdatesNotChecked": "Not checked yet",
+  "installedUpdatesAutomaticOff": "Automatic checks are off",
+  "installedUpdatesChecking": "Checking · {pending} remaining",
+  "@installedUpdatesChecking": {"placeholders": {"pending": {"type": "int"}}},
+  "installedUpdatesResults": "{available} updates available · {failed} checks failed",
+  "@installedUpdatesResults": {"placeholders": {"available": {"type": "int"}, "failed": {"type": "int"}}}
 }

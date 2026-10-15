@@ -107,6 +107,8 @@ abstract interface class SourceHostApi {
   Future<bool> canInstallPackages();
   Future<void> requestInstallPermission();
   Future<ApkInstallInfo> inspectInstall(String filePath);
+  Future<InstalledAppInfo?> inspectInstalledApp(String packageName);
+  Future<List<InstalledAppInfo>> installedApps();
   Future<bool> openInstalled(String packageName);
   void setInstallMethod(InstallMethod method);
   Future<ShizukuStatus> shizukuStatus();
@@ -787,6 +789,13 @@ class DemoHostApi implements SourceHostApi {
   @override
   Future<ApkInstallInfo> inspectInstall(String filePath) async =>
       const ApkInstallInfo.unsupported();
+
+  @override
+  Future<InstalledAppInfo?> inspectInstalledApp(String packageName) async =>
+      null;
+
+  @override
+  Future<List<InstalledAppInfo>> installedApps() async => const [];
 
   @override
   Future<bool> openInstalled(String packageName) async => false;

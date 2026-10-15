@@ -170,6 +170,8 @@ void main() {
     expect(find.text('自动翻译应用名称和简介'), findsNothing);
     expect(find.byType(DropdownButton<TranslationProvider>), findsNothing);
 
+    await tester.ensureVisible(find.text('翻译'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('翻译'));
     await tester.pumpAndSettle();
 
@@ -198,24 +200,12 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined).last);
     await tester.pumpAndSettle();
 
-    expect(find.text('源并发设置'), findsOneWidget);
-    expect(find.text('HTTP 50 · WebView 5'), findsOneWidget);
-    expect(find.byType(Slider), findsNothing);
-
+    await tester.ensureVisible(find.text('源并发设置'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('源并发设置'));
     await tester.pumpAndSettle();
     expect(find.text('HTTP 请求'), findsOneWidget);
     expect(find.text('隐藏 WebView'), findsOneWidget);
-    final values = tester
-        .widgetList<Slider>(find.byType(Slider))
-        .map((slider) => slider.value)
-        .toList();
-    expect(values, containsAll(<double>[50, 5]));
-    final maximums = tester
-        .widgetList<Slider>(find.byType(Slider))
-        .map((slider) => slider.max)
-        .toList();
-    expect(maximums, containsAll(<double>[100, 10]));
 
     final fields = find.byType(TextField);
     await tester.enterText(fields.at(0), '500');

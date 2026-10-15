@@ -112,6 +112,8 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                     "inspectInstall" -> inspectInstall(call, result)
+                    "inspectInstalledApp" -> inspectInstalledApp(call, result)
+                    "installedApps" -> installedApps(result)
                     "openInstalled" -> openInstalled(call, result)
                     else -> result.notImplemented()
                 }
@@ -329,6 +331,47 @@ class MainActivity : FlutterActivity() {
             result.success(true)
         } catch (_: Exception) {
             result.success(false)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun inspectInstalledApp(call: MethodCall, result: MethodChannel.Result) {
+        val packageName = call.argument<String>("packageName")?.trim()
+        if (packageName.isNullOrBlank()) {
+            result.success(null)
+            return
+        }
+        try {
+            val installed = packageManager.getPackageInfo(packageName, 0)
+            result.success(installedAppInfo(installed))
+        } catch (_: PackageManager.NameNotFoundException) {
+            result.success(null)
+        } catch (error: Exception) {
+            result.error("INSTALLED_APP_INSPECTION_FAILED", error.message, null)
+        }
+    }
+
+    private fun installedAppInfo(info: android.content.pm.PackageInfo): Map<String, Any?> = mapOf(
+        "packageName" to info.packageName,
+        "versionName" to info.versionName,
+        "versionCode" to packageVersionCode(info),
+    )
+
+    @Suppress("DEPRECATION")
+    private fun installedApps(result: MethodChannel.Result) {
+        try {
+            val packages = packageManager.getInstalledPackages(0)
+            packages.sortBy { it.packageName }
+            val apps = ArrayList<Map<String, Any?>>(packages.size)
+            var previousPackage: String? = null
+            for (info in packages) {
+                if (info.packageName == previousPackage) continue
+                apps.add(installedAppInfo(info))
+                previousPackage = info.packageName
+            }
+            result.success(apps)
+        } catch (error: Exception) {
+            result.error("INSTALLED_APPS_QUERY_FAILED", error.message, null)
         }
     }
 

@@ -47,7 +47,7 @@ globalThis.source = {
 
 源可以额外实现分阶段详情接口：`detailsMetadata(idOrUrl)` 返回不包含最终下载直链的详情主体，并在 `downloadCandidates` 中返回待解析的下载候选项；`resolveDownloads(candidates, requestId)` 解析这些候选项。解析过程中可调用 `apkmesh.detailProgress(requestId, update)`，其中 `update` 包含候选项 `index`，以及 `download` 或 `downloads`（一个候选项可以产生多个最终文件），失败时包含 `error`。宿主会按候选项顺序逐项更新 UI；只有拿到最终下载对象后才会显示可下载操作，实际下载时仍执行源权限校验。未实现这两个可选接口的源继续使用一次性 `details()`。
 
-`downloadCandidates` 中会跨 Flutter 消息桥保留的字段仅有 `label`、`url`、`size` 和可选 `headers`。解析器必须能从这些字段恢复所需信息，不能依赖候选项中的自定义字段。
+`downloadCandidates` 中会跨 Flutter 消息桥保留的字段仅有 `label`、`url`、`size` 和可选 `headers`。解析器必须能从这些字段恢复所需信息，不能依赖候选项中的自定义字段。自动检查已安装应用更新时，宿主优先调用 `detailsMetadata()`，不调用 `resolveDownloads()`；缺少分阶段能力的源仍调用 `details()`。下载记录关联的源可以不返回包名，宿主通过本地 APK 和已安装包信息确定身份；若详情返回非空包名，则必须与已安装包一致，不通过应用名称模糊匹配。
 
 ## 可选主页目录接口
 
@@ -125,3 +125,6 @@ async debug(projectId, input) {
 - `apkmesh.detailProgress(requestId, update)`：向宿主报告分阶段详情中的下载项解析结果；只能用于源声明的 `resolveDownloads()` 调用，不能替代权限检查。
 
 源脚本调用的能力均按 manifest 权限授权；安装权限仅约束脚本调用 `apkmesh.install()`，不限制用户在应用界面点击“安装”处理已下载的 APK。网络重定向的每一跳都会重新检查协议和 manifest 网络权限；`network: ['*']` 是源对临时下载主机的显式信任声明，下载内容和第三方源的安全性仍由使用者自行确认。脚本没有任意文件读写、系统命令、Cookie 导出或后台安装权限。生产构建中是否内置第三方源，应根据站点授权、条款和安全审阅结果明确决定。
+
+Android 的已安装包列表与版本查询仅供宿主更新检测使用，不是 `apkmesh.*` API，不向 JavaScript 暴露完整设备清单。启用自动检测会向声明包名查询能力的已启用源逐个发送待查包名；用户可在设置中关闭检测，下载和安装仍由用户发起。
+
